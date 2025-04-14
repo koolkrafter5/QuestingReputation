@@ -1,0 +1,22 @@
+# Deaths Task
+# Quest Text
+questrep.gui.deaths.name=Number of Deaths Task
+questrep.gui.deaths.incomplete=You've died %d of %d times.
+questrep.gui.deaths.complete=You've died %d times.
+# Editing Text
+questrep.title.edit_deaths_task=Edit Number of Deaths Task
+questrep.label.deaths=Required Deaths:
+
+# Reputation Task
+# Quest Text
+questrep.gui.reputation.name=Reputation Requirement Task
+questrep.gui.reputation.target=Required %s Reputation: %s (%s)
+questrep.gui.reputation.text=Current %s Reputation: %s (%s)
+# Editing Text
+questrep.gui.edit_reputation_task=Edit Reputation Requirement Task
+questrep.label.reputation.faction=Selected Faction: %s
+questrep.label.reputation.faction.button=Select Faction
+questrep.label.reputation.lower=Lower Bound: %s
+questrep.label.reputation.upper=Upper Bound: %s
+questrep.label.reputation.bound.none=None
+questrep.label.reputation.invert=Invert Range: %s

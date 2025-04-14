@@ -1,4 +1,4 @@
-package com.myname.mymodid;
+package koolkrafter5.questrep;
 
 public class ClientProxy extends CommonProxy {
 
