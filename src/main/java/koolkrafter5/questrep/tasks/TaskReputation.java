@@ -1,5 +1,6 @@
 package koolkrafter5.questrep.tasks;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -12,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StatCollector;
 
 import org.apache.logging.log4j.Level;
 
@@ -27,12 +29,15 @@ import cpw.mods.fml.relauncher.SideOnly;
 import koolkrafter5.questrep.QuestingReputation;
 import koolkrafter5.questrep.client.gui.editors.GuiEditTaskReputation;
 import koolkrafter5.questrep.client.gui.tasks.PanelTaskReputation;
+import koolkrafter5.questrep.reputation.FactionData;
+import koolkrafter5.questrep.reputation.ReputationData;
+import koolkrafter5.questrep.reputation.ReputationTier;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskReputation;
 
 public class TaskReputation implements ITask {
 
     private final Set<UUID> completeUsers = new TreeSet<>();
-    public String faction = "none";
+    public String faction = FactionData.getDefaultFaction();
     public int lowerBound = Integer.MIN_VALUE;
     public int upperBound = Integer.MAX_VALUE;
     public boolean invert = false;
@@ -48,10 +53,21 @@ public class TaskReputation implements ITask {
     }
 
     @Override
-    public void detect(ParticipantInfo participant, DBEntry<IQuest> dbEntry) {
+    public void detect(ParticipantInfo participant, DBEntry<IQuest> quest) {
         UUID playerID = QuestingAPI.getQuestingUUID(participant.PLAYER);
         if (isComplete(playerID)) return;
 
+        int reputation = ReputationData.get()
+            .getReputation(participant.PLAYER, faction);
+        if (checkReputation(reputation)) {
+            setComplete(participant.ALL_UUIDS);
+            participant.markDirtyParty(Collections.singletonList(quest.getID()));
+        }
+    }
+
+    public boolean checkReputation(int reputation) {
+        return !invert && (lowerBound <= reputation && reputation <= upperBound)
+            || invert && (lowerBound > reputation || reputation > upperBound);
     }
 
     @Override
@@ -62,6 +78,10 @@ public class TaskReputation implements ITask {
     @Override
     public void setComplete(UUID uuid) {
         completeUsers.add(uuid);
+    }
+
+    public void setComplete(List<UUID> uuid) {
+        completeUsers.addAll(uuid);
     }
 
     @Override
@@ -82,6 +102,54 @@ public class TaskReputation implements ITask {
     @SideOnly(Side.CLIENT)
     public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest) {
         return new GuiEditTaskReputation(parent, quest, this);
+    }
+
+    public String targetText() {
+        String name = FactionData.getDisplayName(faction);
+
+        if (lowerBound > upperBound) {
+            return StatCollector.translateToLocal("questrep.label.reputation.invalid");
+        }
+
+        if (lowerBound == Integer.MIN_VALUE && upperBound == Integer.MAX_VALUE) {
+            return StatCollector.translateToLocal("questrep.label.reputation.noBounds");
+        }
+
+        if (!invert) {
+            if (lowerBound != Integer.MIN_VALUE && upperBound != Integer.MAX_VALUE) {
+                if (lowerBound == upperBound) return name + " == " + format(lowerBound);
+                return format(lowerBound) + " <= " + name + " <= " + format(upperBound);
+            } else if (lowerBound != Integer.MIN_VALUE) {
+                return name + " >= " + format(lowerBound);
+            } else {
+                return name + " <= " + format(upperBound);
+            }
+        } else {
+            if (lowerBound != Integer.MIN_VALUE && upperBound != Integer.MAX_VALUE) {
+                if (lowerBound == upperBound) return name + " != " + format(lowerBound);
+                return name + " < " + format(lowerBound) + " or " + name + " > " + format(upperBound);
+            } else if (lowerBound != Integer.MIN_VALUE) {
+                return name + " < " + format(lowerBound);
+            } else {
+                return name + " > " + format(upperBound);
+            }
+        }
+    }
+
+    /**
+     * Formats the value in the form Tiername (Value) if it matches a tier. Otherwise, it just returns the value as a
+     * String.
+     */
+    private String format(int value) {
+        List<ReputationTier> tiers = FactionData.getTiers(faction);
+        if (tiers != null) {
+            for (ReputationTier tier : tiers) {
+                if (tier.value == value) {
+                    return tier.name + " (" + value + ")";
+                }
+            }
+        }
+        return Integer.toString(value);
     }
 
     @Override

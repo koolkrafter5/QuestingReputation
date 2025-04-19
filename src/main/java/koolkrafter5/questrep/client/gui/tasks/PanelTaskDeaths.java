@@ -1,12 +1,11 @@
 package koolkrafter5.questrep.client.gui.tasks;
 
-import java.awt.*;
-
 import net.minecraft.init.Items;
 import net.minecraft.util.StatCollector;
 
 import betterquesting.api.utils.BigItemStack;
-import betterquesting.api2.client.gui.misc.*;
+import betterquesting.api2.client.gui.misc.GuiRectangle;
+import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
 import betterquesting.api2.client.gui.panels.content.PanelItemSlot;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;

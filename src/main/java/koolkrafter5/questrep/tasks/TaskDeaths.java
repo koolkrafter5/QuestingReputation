@@ -1,5 +1,6 @@
 package koolkrafter5.questrep.tasks;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -8,13 +9,9 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
-import net.minecraft.stats.StatList;
-import net.minecraft.stats.StatisticsFile;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
@@ -31,6 +28,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import koolkrafter5.questrep.QuestingReputation;
 import koolkrafter5.questrep.client.gui.editors.GuiEditTaskDeaths;
 import koolkrafter5.questrep.client.gui.tasks.PanelTaskDeaths;
+import koolkrafter5.questrep.deaths.DeathData;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskDeaths;
 
 public class TaskDeaths implements ITask {
@@ -49,23 +47,16 @@ public class TaskDeaths implements ITask {
         UUID playerID = QuestingAPI.getQuestingUUID(participant.PLAYER);
         if (isComplete(playerID)) return;
 
-        progress = 0;
-        System.out.println("Active players: " + participant.ACTIVE_PLAYERS);
-        for (EntityPlayer player : participant.ACTIVE_PLAYERS) {
-            EntityPlayerMP playerMP = (EntityPlayerMP) player;
-            StatisticsFile file = playerMP.func_147099_x();
-            progress += file.writeStat(StatList.deathsStat); // WHY IS THE READER METHOD CALLED WRITESTAT???????????
-        }
-
+        progress = getProgress(participant);
         if (progress >= target) {
-            for (UUID player : participant.ACTIVE_UUIDS) {
-                setComplete(player);
-            }
+            setComplete(participant.ALL_UUIDS);
+            participant.markDirtyParty(Collections.singletonList(quest.getID()));
         }
     }
 
-    public void setTarget(int target) {
-        this.target = target;
+    public int getProgress(ParticipantInfo participant) {
+        return DeathData.get()
+            .getDeaths(participant.ALL_UUIDS);
     }
 
     @Override
@@ -81,6 +72,12 @@ public class TaskDeaths implements ITask {
     @Override
     public void setComplete(UUID uuid) {
         completeUsers.add(uuid);
+    }
+
+    public void setComplete(List<UUID> uuid) {
+        for (UUID id : uuid) {
+            setComplete(id);
+        }
     }
 
     @SideOnly(Side.CLIENT)

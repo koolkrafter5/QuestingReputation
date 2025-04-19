@@ -36,5 +36,5 @@
 dependencies {
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.38-GTNH:dev")
     api("curse.maven:BetterQuesting-238856:2950244")
-    api("curse.maven:BetterQuestingStandardExpansion-238857:2950287")
+    runtimeOnlyNonPublishable("curse.maven:BetterQuestingStandardExpansion-238857:2950287")
 }

@@ -89,6 +89,14 @@ public class GuiFactionSelect extends GuiScreenCanvas {
         PanelVScrollBar scFaction = new PanelVScrollBar(
             new GuiTransform(GuiAlign.RIGHT_EDGE, new GuiPadding(-8, 16, 0, 0), 0));
         factionInfo.addPanel(scFaction);
+
+        PanelTextBox soon = new PanelTextBox(
+            new GuiTransform(GuiAlign.MID_CENTER, -100, 0, 200, 12, 0),
+            "Visual editor coming soon!\nEdit factions in config/questingreputation/factions.json for now.",
+            true).setAlignment(1)
+                .setColor(PresetColor.TEXT_MAIN.getColor());
+        factionInfo.addPanel(soon);
+
         factionInfo.setEnabled(
             FactionData.getAllFactions()
                 .contains(faction));

@@ -37,17 +37,17 @@ public class AddRep extends CommandBase {
                     .addChatMessage(new ChatComponentTranslation("Party ID, adding to party rep: " + party.getID()));
             }
             ReputationData.get()
-                .addReputation(playerMP.getUniqueID(), "knights", 5);
+                .addReputation(playerMP, "knights", 5);
             p_71515_1_.addChatMessage(
                 new ChatComponentTranslation(
                     "Current rep: " + ReputationData.get()
-                        .getReputation(playerMP.getUniqueID(), "knights")));
+                        .getReputation(playerMP, "knights")));
             p_71515_1_.addChatMessage(
                 new ChatComponentTranslation(
                     "Current standing: " + FactionData.getTierName(
                         "knights",
                         ReputationData.get()
-                            .getReputation(playerMP.getUniqueID(), "knights"))));
+                            .getReputation(playerMP, "knights"))));
         } else p_71515_1_.addChatMessage(new ChatComponentTranslation("gui.oreDiscovery.notPlayer"));
     }
 }

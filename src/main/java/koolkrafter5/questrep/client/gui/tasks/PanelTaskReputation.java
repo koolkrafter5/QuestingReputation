@@ -1,15 +1,18 @@
 package koolkrafter5.questrep.client.gui.tasks;
 
-import net.minecraft.init.Items;
+import java.awt.*;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.StatCollector;
 
-import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.client.gui.misc.GuiRectangle;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
-import betterquesting.api2.client.gui.panels.content.PanelItemSlot;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
+import betterquesting.api2.client.gui.resources.colors.GuiColorStatic;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import koolkrafter5.questrep.reputation.FactionData;
+import koolkrafter5.questrep.reputation.ReputationData;
 import koolkrafter5.questrep.tasks.TaskReputation;
 
 public class PanelTaskReputation extends CanvasEmpty {
@@ -23,14 +26,30 @@ public class PanelTaskReputation extends CanvasEmpty {
 
     public void initPanel() {
         super.initPanel();
-
-        PanelTextBox text1 = new PanelTextBox(
-            new GuiRectangle(0, 0, 100, 20, 0),
-            StatCollector.translateToLocalFormatted("questrep.gui.reputation.text", task.faction, 0));
-        text1.setColor(PresetColor.TEXT_MAIN.getColor())
+        String displayName = FactionData.getDisplayName(task.faction);
+        PanelTextBox target = new PanelTextBox(
+            new GuiRectangle(0, 0, 200, 20, 0),
+            StatCollector.translateToLocalFormatted("questrep.gui.reputation.required", displayName, task.targetText()),
+            true);
+        target.setColor(PresetColor.TEXT_MAIN.getColor())
             .setFontSize(12);
-        PanelItemSlot skull = new PanelItemSlot(new GuiRectangle(0, 20, 24, 24, 0), -1, new BigItemStack(Items.skull));
-        this.addPanel(text1);
-        this.addPanel(skull);
+        this.addPanel(target);
+
+        int rep = ReputationData.get()
+            .getReputation(Minecraft.getMinecraft().thePlayer, task.faction);
+        PanelTextBox current = new PanelTextBox(
+            new GuiRectangle(0, 50, 200, 20, 0),
+            StatCollector.translateToLocalFormatted(
+                "questrep.gui.reputation.current",
+                rep,
+                FactionData.getTierName(task.faction, rep)),
+            true);
+        if (task.checkReputation(rep)) {
+            current.setColor(new GuiColorStatic(new Color(0, 180, 0)));
+        } else {
+            current.setColor(new GuiColorStatic(new Color(180, 0, 0)));
+        }
+        current.setFontSize(12);
+        this.addPanel(current);
     }
 }

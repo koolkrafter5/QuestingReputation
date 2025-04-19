@@ -13,7 +13,5 @@ public class ReputationTier {
         this.value = value;
     }
 
-    public ReputationTier() {
-
-    }
+    public ReputationTier() {}
 }

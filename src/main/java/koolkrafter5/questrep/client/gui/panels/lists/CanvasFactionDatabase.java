@@ -34,26 +34,28 @@ public class CanvasFactionDatabase extends CanvasSearch<String, String> {
         return list.iterator();
     }
 
-    protected void queryMatches(String ee, String query, ArrayDeque<String> results) {
-        if (!StringUtils.isNullOrEmpty(ee)) {
-            if (ee.toLowerCase()
-                .contains(query)) {
-                results.add(ee);
+    protected void queryMatches(String entry, String query, ArrayDeque<String> results) {
+        if (!StringUtils.isNullOrEmpty(entry)) {
+            if (entry.toLowerCase()
+                .contains(query)
+                || FactionData.getDisplayName(entry)
+                    .toLowerCase()
+                    .contains(query)) {
+                results.add(entry);
             }
-
         }
     }
 
-    protected boolean addResult(String ee, int index, int cachedWidth) {
-        if (ee == null) {
+    protected boolean addResult(String entry, int index, int cachedWidth) {
+        if (entry == null) {
             return false;
         } else {
             this.addPanel(
                 new PanelButtonStorage<>(
                     new GuiRectangle(0, index * 16, cachedWidth, 16, 0),
                     this.btnId,
-                    FactionData.getDisplayName(ee),
-                    ee));
+                    FactionData.getDisplayName(entry),
+                    entry));
             return true;
         }
     }

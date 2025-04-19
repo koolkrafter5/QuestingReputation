@@ -1,6 +1,7 @@
 package koolkrafter5.questrep;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +20,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import koolkrafter5.questrep.command.AddRep;
 import koolkrafter5.questrep.command.SeeJson;
 import koolkrafter5.questrep.command.SeePartyID;
+import koolkrafter5.questrep.handlers.QRHandlers;
 import koolkrafter5.questrep.reputation.FactionData;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskDeaths;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskReputation;
@@ -56,6 +58,7 @@ public class QuestingReputation {
 
         FactionData.loadFactions();
 
+        MinecraftForge.EVENT_BUS.register(new QRHandlers());
     }
 
     @Mod.EventHandler

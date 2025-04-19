@@ -1,6 +1,7 @@
 package koolkrafter5.questrep.client.gui.editors;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -38,14 +39,12 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
     private final DBEntry<IQuest> quest;
     private final TaskReputation task;
 
-    private int lowerTierIndex = -1;
-    private int upperTierIndex;
-    private List<ReputationTier> currentTiers = new ArrayList<>();
-    private PanelTextField<Integer> txtLowerBound, txtUpperBound;
+    private int lowerTierIndex, upperTierIndex;
     private boolean lowerTextUpdate, upperTextUpdate;
+    private List<ReputationTier> currentTiers = new ArrayList<>();
 
-    private PanelTextBox currentFaction;
-    private PanelTextBox lowerText, upperText;
+    private PanelTextField<Integer> txtLowerBound, txtUpperBound;
+    private PanelTextBox currentFaction, lowerText, upperText, previewText;
     private PanelButton lowerMin, lowerDec, lowerInc, lowerMax;
     private PanelButton upperMin, upperDec, upperInc, upperMax;
 
@@ -53,6 +52,11 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
         super(parent);
         this.quest = quest;
         this.task = task;
+        if (FactionData.getTiers(task.faction)
+            .isEmpty()) {
+
+        }
+        lowerTierIndex = -1;
         upperTierIndex = FactionData.getTiers(task.faction)
             .size();
         this.setVolatile(true);
@@ -110,18 +114,18 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
             .setColor(PresetColor.TEXT_MAIN.getColor());
         cvBackground.addPanel(lowerText);
         txtLowerBound = new PanelTextField<>(
-            new GuiTransform(GuiAlign.TOP_CENTER, -80, 74, 160, 16, 0),
-            task.lowerBound != Integer.MIN_VALUE ? Integer.toString(task.lowerBound) : "",
+            new GuiTransform(GuiAlign.TOP_CENTER, -60, 74, 120, 16, 0),
+            Integer.toString(task.lowerBound),
             FieldFilterNumber.INT);
         txtLowerBound.setCallback(val -> {
             task.lowerBound = val;
             lowerTextUpdate = true;
-            setLowerButtons();
+            setLowerIndex();
             rebuildText();
         });
         cvBackground.addPanel(txtLowerBound);
 
-        lowerMin = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -120, 74, 20, 16, 0), 1, "<<") {
+        lowerMin = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -100, 74, 20, 16, 0), 1, "x") {
 
             // Remove Lower Bound
             @Override
@@ -129,13 +133,15 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                 if (currentTiers.isEmpty()) {
                     return;
                 }
-                txtLowerBound.setText("");
+                lowerTextUpdate = false;
                 lowerTierIndex = -1;
                 updateLowerBound();
             }
         };
+        lowerMin.setTooltip(
+            Collections.singletonList(StatCollector.translateToLocal("questrep.button.reputation.remove.lower")));
         cvBackground.addPanel(lowerMin);
-        lowerDec = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -100, 74, 20, 16, 0), 0, "<") {
+        lowerDec = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -80, 74, 20, 16, 0), 0, "<") {
 
             // Decrease Lower Bound
             @Override
@@ -144,23 +150,28 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                     return;
                 }
                 if (lowerTextUpdate) {
-                    for (int i = 0; i < currentTiers.size(); i++) {
-                        if (currentTiers.get(i).value >= task.lowerBound) {
-                            lowerTextUpdate = false;
-                            lowerTierIndex = i;
-                            break;
+                    if (currentTiers.get(0).value > task.lowerBound) {
+                        lowerTierIndex = 0;
+                    } else if (currentTiers.get(currentTiers.size() - 1).value < task.lowerBound) {
+                        lowerTierIndex = currentTiers.size();
+                    } else {
+                        for (int i = 0; i < currentTiers.size(); i++) {
+                            if (currentTiers.get(i).value >= task.lowerBound) {
+                                lowerTierIndex = i;
+                                break;
+                            }
                         }
                     }
+                    lowerTextUpdate = false;
                 }
                 lowerTierIndex = lowerTierIndex - 1;
-                if (lowerTierIndex <= -1) {
-                    txtLowerBound.setText("");
-                }
                 updateLowerBound();
             }
         };
+        lowerDec.setTooltip(
+            Collections.singletonList(StatCollector.translateToLocal("questrep.button.reputation.previous")));
         cvBackground.addPanel(lowerDec);
-        lowerInc = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, 80, 74, 20, 16, 0), 1, ">") {
+        lowerInc = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, 60, 74, 20, 16, 0), 1, ">") {
 
             // Increase Lower Bound
             @Override
@@ -169,20 +180,28 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                     return;
                 }
                 if (lowerTextUpdate) {
-                    for (int i = currentTiers.size() - 1; i >= 0; i--) {
-                        if (currentTiers.get(i).value <= task.lowerBound) {
-                            lowerTextUpdate = false;
-                            lowerTierIndex = i;
-                            break;
+                    if (currentTiers.get(0).value > task.lowerBound) {
+                        lowerTierIndex = -1;
+                    } else if (currentTiers.get(currentTiers.size() - 1).value < task.lowerBound) {
+                        lowerTierIndex = currentTiers.size();
+                    } else {
+                        for (int i = 0; i < currentTiers.size(); i++) {
+                            if (currentTiers.get(i).value > task.lowerBound) {
+                                lowerTierIndex = i - 1;
+                                break;
+                            }
                         }
                     }
+                    lowerTextUpdate = false;
                 }
                 lowerTierIndex = lowerTierIndex + 1;
                 updateLowerBound();
             }
         };
+        lowerInc
+            .setTooltip(Collections.singletonList(StatCollector.translateToLocal("questrep.button.reputation.next")));
         cvBackground.addPanel(lowerInc);
-        lowerMax = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, 100, 74, 20, 16, 0), 1, ">>") {
+        lowerMax = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, 80, 74, 20, 16, 0), 1, ">>") {
 
             // Set Lower Bound to the highest tier
             @Override
@@ -191,9 +210,12 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                     return;
                 }
                 lowerTierIndex = currentTiers.size() - 1;
+                lowerTextUpdate = false;
                 updateLowerBound();
             }
         };
+        lowerMax.setTooltip(
+            Collections.singletonList(StatCollector.translateToLocal("questrep.button.reputation.highest")));
         cvBackground.addPanel(lowerMax);
 
         // Upper Bound Controls
@@ -201,16 +223,17 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
             .setColor(PresetColor.TEXT_MAIN.getColor());
         cvBackground.addPanel(upperText);
         txtUpperBound = new PanelTextField<>(
-            new GuiTransform(GuiAlign.TOP_CENTER, -80, 108, 160, 16, 0),
+            new GuiTransform(GuiAlign.TOP_CENTER, -60, 108, 120, 16, 0),
             Integer.toString(task.upperBound),
             FieldFilterNumber.INT);
         txtUpperBound.setCallback(val -> {
             task.upperBound = val;
             upperTextUpdate = true;
-            setTierIndices();
+            setUpperIndex();
+            updateUpperBound();
             rebuildText();
         });
-        upperMin = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -120, 108, 20, 16, 0), 1, "<<") {
+        upperMin = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -100, 108, 20, 16, 0), 1, "<<") {
 
             // Set Upper Bound to the lowest tier
             @Override
@@ -219,11 +242,14 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                     return;
                 }
                 upperTierIndex = 0;
+                upperTextUpdate = false;
                 updateUpperBound();
             }
         };
+        upperMin
+            .setTooltip(Collections.singletonList(StatCollector.translateToLocal("questrep.button.reputation.lowest")));
         cvBackground.addPanel(upperMin);
-        upperDec = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -100, 108, 20, 16, 0), 2, "<") {
+        upperDec = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -80, 108, 20, 16, 0), 2, "<") {
 
             // Decrease Upper Bound
             @Override
@@ -232,20 +258,28 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                     return;
                 }
                 if (upperTextUpdate) {
-                    for (int i = 0; i < currentTiers.size(); i++) {
-                        if (currentTiers.get(i).value >= task.upperBound) {
-                            upperTextUpdate = false;
-                            upperTierIndex = i;
-                            break;
+                    if (currentTiers.get(0).value > task.upperBound) {
+                        upperTierIndex = 0;
+                    } else if (currentTiers.get(currentTiers.size() - 1).value < task.upperBound) {
+                        upperTierIndex = currentTiers.size();
+                    } else {
+                        for (int i = 0; i < currentTiers.size(); i++) {
+                            if (currentTiers.get(i).value >= task.upperBound) {
+                                upperTierIndex = i;
+                                break;
+                            }
                         }
                     }
+                    upperTextUpdate = false;
                 }
                 upperTierIndex = upperTierIndex - 1;
                 updateUpperBound();
             }
         };
+        upperDec.setTooltip(
+            Collections.singletonList(StatCollector.translateToLocal("questrep.button.reputation.previous")));
         cvBackground.addPanel(upperDec);
-        upperInc = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, 80, 108, 20, 16, 0), 3, ">") {
+        upperInc = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, 60, 108, 20, 16, 0), 3, ">") {
 
             // Increase Upper Bound
             @Override
@@ -254,13 +288,19 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                     return;
                 }
                 if (upperTextUpdate) {
-                    for (int i = currentTiers.size() - 1; i >= 0; i--) {
-                        if (currentTiers.get(i).value <= task.upperBound) {
-                            upperTextUpdate = false;
-                            upperTierIndex = i;
-                            break;
+                    if (currentTiers.get(0).value > task.upperBound) {
+                        upperTierIndex = -1;
+                    } else if (currentTiers.get(currentTiers.size() - 1).value < task.upperBound) {
+                        upperTierIndex = currentTiers.size() - 1;
+                    } else {
+                        for (int i = currentTiers.size() - 1; i >= 0; i--) {
+                            if (currentTiers.get(i).value <= task.upperBound) {
+                                upperTierIndex = i;
+                                break;
+                            }
                         }
                     }
+                    upperTextUpdate = false;
                 }
                 if (upperTierIndex >= currentTiers.size() - 1) {
                     txtUpperBound.setText("");
@@ -269,8 +309,10 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                 updateUpperBound();
             }
         };
+        upperInc
+            .setTooltip(Collections.singletonList(StatCollector.translateToLocal("questrep.button.reputation.next")));
         cvBackground.addPanel(upperInc);
-        upperMax = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, 100, 108, 20, 16, 0), 3, ">>") {
+        upperMax = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, 80, 108, 20, 16, 0), 3, "x") {
 
             // Remove Upper Bound
             @Override
@@ -278,11 +320,15 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                 if (currentTiers.isEmpty()) {
                     return;
                 }
+                task.upperBound = Integer.MAX_VALUE;
                 txtUpperBound.setText("");
-                upperTierIndex = currentTiers.size() - 1;
+                upperTierIndex = currentTiers.size();
+                upperTextUpdate = false;
                 updateUpperBound();
             }
         };
+        upperMax.setTooltip(
+            Collections.singletonList(StatCollector.translateToLocal("questrep.button.reputation.remove.upper")));
         cvBackground.addPanel(upperMax);
         cvBackground.addPanel(txtUpperBound);
 
@@ -298,38 +344,71 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
                 }
             });
 
-        setTierIndices();
+        // Preview Text
+        previewText = new PanelTextBox(new GuiTransform(GuiAlign.TOP_CENTER, -100, 158, 200, 12, 0), "", true)
+            .setAlignment(1)
+            .setColor(PresetColor.TEXT_MAIN.getColor());
+        cvBackground.addPanel(previewText);
+
+        lowerTextUpdate = true;
+        upperTextUpdate = true;
+        setLowerIndex();
+        setUpperIndex();
         rebuildText();
     }
 
     private void loadTiers() {
         currentTiers = FactionData.getTiers(task.faction);
-        if (currentTiers == null) currentTiers = new ArrayList<>();
     }
 
-    private void setTierIndices() {
-        for (int i = 0; i < currentTiers.size(); i++) {
-            int val = currentTiers.get(i).value;
-            if (FactionData.getTierValue(task.faction, task.upperBound) == val) {
-                upperTierIndex = i;
-            }
-            if (FactionData.getTierValue(task.faction, task.upperBound) == val) {
-                lowerTierIndex = i;
+    private void setLowerIndex() {
+        if (currentTiers.get(0).value > task.lowerBound) {
+            lowerTierIndex = -1;
+            lowerTextUpdate = false;
+        } else if (currentTiers.get(currentTiers.size() - 1).value < task.lowerBound) {
+            lowerTierIndex = currentTiers.size() - 1;
+            lowerTextUpdate = false;
+        } else {
+            for (int i = 0; i < currentTiers.size(); i++) {
+                int val = currentTiers.get(i).value;
+                if (FactionData.getTierValue(task.faction, task.lowerBound) == val) {
+                    lowerTierIndex = i;
+                }
             }
         }
         updateLowerBound();
+    }
+
+    private void setUpperIndex() {
+        if (currentTiers.get(0).value > task.upperBound) {
+            upperTierIndex = 0;
+            upperTextUpdate = false;
+        } else if (currentTiers.get(currentTiers.size() - 1).value < task.upperBound) {
+            upperTierIndex = currentTiers.size();
+            upperTextUpdate = false;
+        } else {
+            for (int i = 0; i < currentTiers.size(); i++) {
+                int val = currentTiers.get(i).value;
+                if (FactionData.getTierValue(task.faction, task.upperBound) == val) {
+                    upperTierIndex = i;
+                }
+            }
+        }
         updateUpperBound();
     }
 
     private void updateLowerBound() {
         if (currentTiers.isEmpty()) return;
+        setLowerButtons();
         if (lowerTextUpdate) {
             task.lowerBound = txtLowerBound.getValue();
-            lowerTextUpdate = false;
             rebuildText();
             return;
         }
-        if (setLowerButtons()) {
+        if (lowerTierIndex < 0 || lowerTierIndex >= currentTiers.size()) {
+            task.lowerBound = Integer.MIN_VALUE;
+            txtLowerBound.setText("");
+            rebuildText();
             return;
         }
         task.lowerBound = currentTiers.get(lowerTierIndex).value;
@@ -337,16 +416,33 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
         rebuildText();
     }
 
-    private boolean setLowerButtons() {
+    private void updateUpperBound() {
+        if (currentTiers.isEmpty()) return;
+        setUpperButtons();
+        if (upperTextUpdate) {
+            task.upperBound = txtUpperBound.getValue();
+            rebuildText();
+            return;
+        }
+        if (upperTierIndex < 0 || upperTierIndex >= currentTiers.size()) {
+            task.upperBound = Integer.MAX_VALUE;
+            txtUpperBound.setText("");
+            rebuildText();
+            return;
+        }
+        task.upperBound = currentTiers.get(upperTierIndex).value;
+        txtUpperBound.setText(Integer.toString(task.upperBound));
         rebuildText();
-        if (lowerTierIndex == -1) {
+    }
+
+    private void setLowerButtons() {
+        if (lowerTierIndex <= -1) {
+            lowerTierIndex = -1;
             task.lowerBound = Integer.MIN_VALUE;
             lowerMin.setEnabled(false);
             lowerDec.setEnabled(false);
             lowerInc.setEnabled(true);
             lowerMax.setEnabled(true);
-            rebuildText();
-            return true;
         } else if (lowerTierIndex >= currentTiers.size() - 1) {
             lowerTierIndex = currentTiers.size() - 1;
             lowerMin.setEnabled(true);
@@ -359,36 +455,19 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
             lowerInc.setEnabled(true);
             lowerMax.setEnabled(true);
         }
-        return false;
-    }
-
-    private void updateUpperBound() {
-        if (currentTiers.isEmpty()) return;
-        if (upperTextUpdate) {
-            task.upperBound = txtUpperBound.getValue();
-            upperTextUpdate = false;
-            rebuildText();
-            return;
-        }
-        if (setUpperButtons()) {
-            return;
-        }
-        task.upperBound = currentTiers.get(upperTierIndex).value;
-        txtUpperBound.setText(Integer.toString(task.upperBound));
         rebuildText();
     }
 
-    private boolean setUpperButtons() {
-        rebuildText();
-        if (upperTierIndex == 0) {
+    private void setUpperButtons() {
+        if (upperTierIndex <= 0) {
+            upperTierIndex = 0;
             upperMin.setEnabled(false);
             upperDec.setEnabled(false);
             upperInc.setEnabled(true);
             upperMax.setEnabled(true);
-            return true;
-        } else if (upperTierIndex >= currentTiers.size() - 1) {
+        } else if (upperTierIndex >= currentTiers.size()) {
             task.upperBound = Integer.MAX_VALUE;
-            upperTierIndex = currentTiers.size() - 1;
+            upperTierIndex = currentTiers.size();
             upperMin.setEnabled(true);
             upperDec.setEnabled(true);
             upperInc.setEnabled(false);
@@ -399,7 +478,7 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
             upperInc.setEnabled(true);
             upperMax.setEnabled(true);
         }
-        return false;
+        rebuildText();
     }
 
     private String getInvertText() {
@@ -434,6 +513,8 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
         }
         task.faction = faction;
         lowerTierIndex = -1;
+        lowerText.setText("");
+        upperText.setText("");
         loadTiers();
         initPanel();
     }
@@ -445,11 +526,12 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
             QuestTranslation.translate(
                 "questrep.label.reputation.lower",
                 (task.lowerBound != Integer.MIN_VALUE ? FactionData.getTierName(task.faction, task.lowerBound)
-                    : StatCollector.translateToLocal("questrep.label.reputation.bound.none"))));
+                    : StatCollector.translateToLocal("questrep.label.reputation.none"))));
         upperText.setText(
             QuestTranslation.translate(
                 "questrep.label.reputation.upper",
                 (task.upperBound != Integer.MAX_VALUE ? FactionData.getTierName(task.faction, task.upperBound)
-                    : StatCollector.translateToLocal("questrep.label.reputation.bound.none"))));
+                    : StatCollector.translateToLocal("questrep.label.reputation.none"))));
+        previewText.setText(task.targetText());
     }
 }

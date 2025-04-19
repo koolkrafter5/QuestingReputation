@@ -10,13 +10,22 @@ questrep.label.deaths=Required Deaths:
 # Reputation Task
 # Quest Text
 questrep.gui.reputation.name=Reputation Requirement Task
-questrep.gui.reputation.target=Required %s Reputation: %s (%s)
-questrep.gui.reputation.text=Current %s Reputation: %s (%s)
+questrep.gui.reputation.required=Required %s Reputation: %s
+questrep.gui.reputation.current=Current: %s (%s)
 # Editing Text
 questrep.gui.edit_reputation_task=Edit Reputation Requirement Task
 questrep.label.reputation.faction=Selected Faction: %s
 questrep.label.reputation.faction.button=Select Faction
 questrep.label.reputation.lower=Lower Bound: %s
 questrep.label.reputation.upper=Upper Bound: %s
-questrep.label.reputation.bound.none=None
+questrep.label.reputation.none=None
 questrep.label.reputation.invert=Invert Range: %s
+questrep.label.reputation.invalid=Invalid: lower bound is greater than upper bound
+questrep.label.reputation.noBounds=No reputation bounds set
+# Editing Buttons
+questrep.button.reputation.remove.lower=Remove Lower Bound
+questrep.button.reputation.remove.upper=Remove Upper Bound
+questrep.button.reputation.next=Next Tier
+questrep.button.reputation.previous=Previous Tier
+questrep.button.reputation.lowest=Lowest Tier
+questrep.button.reputation.highest=Highest Tier

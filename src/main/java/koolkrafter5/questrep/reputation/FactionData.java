@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -22,12 +23,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import koolkrafter5.questrep.QRConfig;
 import koolkrafter5.questrep.QuestingReputation;
 
 public class FactionData {
 
+    public static final List<ReputationTier> UNKNOWN_TIERS = Collections.singletonList(ReputationTier.UNKNOWN);
+
     private static final Map<String, List<ReputationTier>> tiers = new HashMap<>();
     private static final Map<String, String> names = new HashMap<>();
+    private static final Map<String, Integer> deathChange = new HashMap<>();
+    private static final Map<String, Integer> defaultReputation = new HashMap<>();
+
     private static final String configPath = "config/questingreputation/factions.json";
 
     public static void loadFactions() {
@@ -35,7 +42,6 @@ public class FactionData {
 
         if (!configFile.exists()) {
             createDefaultConfig(configFile);
-            return;
         }
 
         try (Reader reader = new FileReader(configFile)) {
@@ -48,9 +54,10 @@ public class FactionData {
                     .getAsJsonObject();
                 JsonArray tiersArray = factionObject.getAsJsonArray("tiers");
 
-                String displayName = factionObject.has("name") ? factionObject.get("name")
-                    .getAsString() : factionName;
-                names.put(factionName, displayName);
+                setDisplayName(
+                    factionName,
+                    factionObject.has("name") ? factionObject.get("name")
+                        .getAsString() : factionName);
 
                 List<ReputationTier> tierList = new ArrayList<>();
 
@@ -65,12 +72,26 @@ public class FactionData {
                 }
 
                 tierList.sort(Comparator.comparingInt(t -> t.value));
-                tiers.put(factionName, tierList);
+                setAllTiers(factionName, tierList);
+
+                setDeathChange(
+                    factionName,
+                    factionObject.has("deathChange") ? factionObject.get("deathChange")
+                        .getAsInt() : QRConfig.defaultDeathChange);
+
+                setDefaultReputation(
+                    factionName,
+                    factionObject.has("defaultReputation") ? factionObject.get("defaultReputation")
+                        .getAsInt() : QRConfig.defaultReputation);
             }
 
         } catch (Exception e) {
             QuestingReputation.log.error("Failed to load faction reputation config: {}", e);
         }
+    }
+
+    private static void setDisplayName(String factionID, String displayName) {
+        names.put(factionID, displayName);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -84,6 +105,7 @@ public class FactionData {
 
         JsonObject knights = new JsonObject();
         knights.addProperty("name", "Order of the Knights");
+        knights.addProperty("deathChange", -10);
         JsonArray knightTiers = new JsonArray();
 
         knightTiers.add(createTier("Hated", -100));
@@ -107,6 +129,7 @@ public class FactionData {
 
         mages.add("tiers", mageTiers);
         mages.addProperty("name", "Mages' Guild");
+        mages.addProperty("defaultReputation", -50);
         root.add("mages", mages);
 
         try (Writer writer = new FileWriter(configFile)) {
@@ -124,7 +147,7 @@ public class FactionData {
      * A reputation value is part of a tier if it is greater than the tier value (if above zero), below the
      * tier value (if below zero), or neutral if equal to zero.
      */
-    public static ReputationTier getTier(String faction, int rep) {
+    public static synchronized ReputationTier getTier(String faction, int rep) {
         if (rep == Integer.MAX_VALUE) {
             return ReputationTier.MAX_INT;
         } else if (rep == Integer.MIN_VALUE) {
@@ -162,12 +185,19 @@ public class FactionData {
         return ReputationTier.UNKNOWN;
     }
 
+    private static JsonObject createTier(String name, int value) {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("name", name);
+        obj.addProperty("value", value);
+        return obj;
+    }
+
     /**
      * Gets the name of the tier the given reputation is part of for the given faction.
      * A reputation value is part of a tier if it is greater than the tier value (if above zero), below the
      * tier value (if below zero), or neutral if equal to zero.
      */
-    public static String getTierName(String faction, int rep) {
+    public static synchronized String getTierName(String faction, int rep) {
         return getTier(faction, rep).name;
     }
 
@@ -176,15 +206,8 @@ public class FactionData {
      * A reputation value is part of a tier if it is greater than the tier value (if above zero), below the
      * tier value (if below zero), or neutral if equal to zero.
      */
-    public static int getTierValue(String faction, int rep) {
+    public static synchronized int getTierValue(String faction, int rep) {
         return getTier(faction, rep).value;
-    }
-
-    private static JsonObject createTier(String name, int value) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("name", name);
-        obj.addProperty("value", value);
-        return obj;
     }
 
     /**
@@ -194,7 +217,7 @@ public class FactionData {
      * @return A List of ReputationTiers.
      */
     public static synchronized List<ReputationTier> getTiers(String faction) {
-        return tiers.get(faction);
+        return tiers.getOrDefault(faction, UNKNOWN_TIERS);
     }
 
     /**
@@ -217,7 +240,7 @@ public class FactionData {
     /**
      * Clears tiers for every faction.
      */
-    public static void clearAllTiers() {
+    public static synchronized void clearAllTiers() {
         for (String faction : tiers.keySet()) {
             clearTiers(faction);
         }
@@ -228,22 +251,54 @@ public class FactionData {
      *
      * @param faction The faction's tiers to clear
      */
-    public static void clearTiers(String faction) {
-        if (faction != null) {
+    public static synchronized void clearTiers(String faction) {
+        if (faction != null && tiers.containsKey(faction)) {
             tiers.get(faction)
                 .clear();
         }
     }
 
     /**
-     * Gets the display name for the given faction (automatically translates translation keys!)
+     * Returns the display name for the given faction (automatically translates translation keys!)
      */
-    public static String getDisplayName(String factionId) {
+    public static synchronized String getDisplayName(String factionId) {
         return StatCollector.translateToLocalFormatted(names.getOrDefault(factionId, factionId));
     }
 
-    public static Set<String> getAllFactions() {
+    /**
+     * Returns a set that contains every faction ID.
+     */
+    public static synchronized Set<String> getAllFactions() {
         return tiers.keySet();
     }
 
+    /**
+     * Returns the value that reputation will change by for each death for the given faction.
+     */
+    public static synchronized int getDeathChange(String faction) {
+        return deathChange.getOrDefault(faction, QRConfig.defaultDeathChange);
+    }
+
+    /**
+     * Set the value that reputation will change by for each death to the given value for the given faction.
+     */
+    public static synchronized void setDeathChange(String faction, int value) {
+        deathChange.put(faction, value);
+    }
+
+    public static Integer getDefaultReputation(String faction) {
+        return defaultReputation.getOrDefault(faction, QRConfig.defaultReputation);
+    }
+
+    public static void setDefaultReputation(String faction, int value) {
+        defaultReputation.put(faction, value);
+    }
+
+    public static String getDefaultFaction() {
+        Set<String> factions = getAllFactions();
+        if (factions.isEmpty()) {
+            return "none";
+        }
+        return (String) factions.toArray()[0];
+    }
 }
