@@ -27,7 +27,7 @@ import betterquesting.api2.utils.ParticipantInfo;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import koolkrafter5.questrep.QuestingReputation;
-import koolkrafter5.questrep.client.gui.editors.GuiEditTaskReputation;
+import koolkrafter5.questrep.client.gui.editors.tasks.GuiEditTaskReputation;
 import koolkrafter5.questrep.client.gui.tasks.PanelTaskReputation;
 import koolkrafter5.questrep.reputation.FactionData;
 import koolkrafter5.questrep.reputation.ReputationData;

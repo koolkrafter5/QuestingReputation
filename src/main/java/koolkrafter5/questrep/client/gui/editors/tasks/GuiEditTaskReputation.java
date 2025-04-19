@@ -1,4 +1,4 @@
-package koolkrafter5.questrep.client.gui.editors;
+package koolkrafter5.questrep.client.gui.editors.tasks;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,11 +29,13 @@ import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
 import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
+import koolkrafter5.questrep.client.gui.editors.GuiFactionSelect;
+import koolkrafter5.questrep.client.gui.editors.IFactionSelectionReceiver;
 import koolkrafter5.questrep.reputation.FactionData;
 import koolkrafter5.questrep.reputation.ReputationTier;
 import koolkrafter5.questrep.tasks.TaskReputation;
 
-public class GuiEditTaskReputation extends GuiScreenCanvas {
+public class GuiEditTaskReputation extends GuiScreenCanvas implements IFactionSelectionReceiver {
 
     private static final ResourceLocation QUEST_EDIT = new ResourceLocation("betterquesting:quest_edit");
     private final DBEntry<IQuest> quest;
@@ -52,10 +54,6 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
         super(parent);
         this.quest = quest;
         this.task = task;
-        if (FactionData.getTiers(task.faction)
-            .isEmpty()) {
-
-        }
         lowerTierIndex = -1;
         upperTierIndex = FactionData.getTiers(task.faction)
             .size();
@@ -503,6 +501,7 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
             .sendToServer(new QuestingPacket(QUEST_EDIT, payload));
     }
 
+    @Override
     public void setFaction(String faction) {
         if (FactionData.getAllFactions()
             .contains(faction)) {
@@ -519,6 +518,7 @@ public class GuiEditTaskReputation extends GuiScreenCanvas {
         initPanel();
     }
 
+    @Override
     public void rebuildText() {
         currentFaction.setText(
             QuestTranslation.translate("questrep.label.reputation.faction", FactionData.getDisplayName(task.faction)));

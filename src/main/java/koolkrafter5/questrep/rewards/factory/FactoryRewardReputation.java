@@ -14,7 +14,7 @@ public class FactoryRewardReputation implements IFactoryData<IReward, NBTTagComp
     public FactoryRewardReputation() {}
 
     public ResourceLocation getRegistryName() {
-        return new ResourceLocation("bq_standard", "scoreboard");
+        return new ResourceLocation("questrep", "reputation");
     }
 
     public RewardReputation createNew() {

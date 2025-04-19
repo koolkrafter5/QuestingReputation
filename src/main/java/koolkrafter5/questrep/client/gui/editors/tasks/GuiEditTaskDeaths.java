@@ -1,4 +1,4 @@
-package koolkrafter5.questrep.client.gui.editors;
+package koolkrafter5.questrep.client.gui.editors.tasks;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.nbt.NBTTagCompound;

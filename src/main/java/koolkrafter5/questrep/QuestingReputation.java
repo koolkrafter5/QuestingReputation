@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.registry.IFactoryData;
 import betterquesting.api2.registry.IRegistry;
@@ -22,6 +23,7 @@ import koolkrafter5.questrep.command.SeeJson;
 import koolkrafter5.questrep.command.SeePartyID;
 import koolkrafter5.questrep.handlers.QRHandlers;
 import koolkrafter5.questrep.reputation.FactionData;
+import koolkrafter5.questrep.rewards.factory.FactoryRewardReputation;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskDeaths;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskReputation;
 
@@ -55,6 +57,10 @@ public class QuestingReputation {
         IRegistry<IFactoryData<ITask, NBTTagCompound>, ITask> taskReg = QuestingAPI.getAPI(ApiReference.TASK_REG);
         taskReg.register(FactoryTaskDeaths.INSTANCE);
         taskReg.register(FactoryTaskReputation.INSTANCE);
+
+        IRegistry<IFactoryData<IReward, NBTTagCompound>, IReward> rewardReg = QuestingAPI
+            .getAPI(ApiReference.REWARD_REG);
+        rewardReg.register(FactoryRewardReputation.INSTANCE);
 
         FactionData.loadFactions();
 

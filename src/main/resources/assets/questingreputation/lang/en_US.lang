@@ -29,3 +29,8 @@ questrep.button.reputation.next=Next Tier
 questrep.button.reputation.previous=Previous Tier
 questrep.button.reputation.lowest=Lowest Tier
 questrep.button.reputation.highest=Highest Tier
+
+# Reputation Reward
+questrep.reward.reputation=Reputation Reward
+questrep.gui.edit_reputation_reward=Edit Reputation Reward
+questrep.gui.change=Reputation Change:

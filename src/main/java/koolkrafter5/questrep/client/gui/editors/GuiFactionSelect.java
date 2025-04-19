@@ -2,6 +2,8 @@ package koolkrafter5.questrep.client.gui.editors;
 
 import java.util.function.Consumer;
 
+import net.minecraft.client.gui.GuiScreen;
+
 import org.lwjgl.input.Keyboard;
 
 import betterquesting.api2.client.gui.GuiScreenCanvas;
@@ -32,12 +34,12 @@ import koolkrafter5.questrep.reputation.FactionData;
 
 public class GuiFactionSelect extends GuiScreenCanvas {
 
-    private final GuiEditTaskReputation parent;
+    private final IFactionSelectionReceiver parent;
     private String faction;
     CanvasEmpty factionInfo;
 
-    public GuiFactionSelect(GuiEditTaskReputation parent, String faction) {
-        super(parent);
+    public GuiFactionSelect(IFactionSelectionReceiver parent, String faction) {
+        super((GuiScreen) parent);
         this.parent = parent;
         this.faction = faction;
         this.setVolatile(true);
@@ -92,7 +94,7 @@ public class GuiFactionSelect extends GuiScreenCanvas {
 
         PanelTextBox soon = new PanelTextBox(
             new GuiTransform(GuiAlign.MID_CENTER, -100, 0, 200, 12, 0),
-            "Visual editor coming soon!\nEdit factions in config/questingreputation/factions.json for now.",
+            "Visual editor coming soon! Edit factions in config/questingreputation/factions.json for now.",
             true).setAlignment(1)
                 .setColor(PresetColor.TEXT_MAIN.getColor());
         factionInfo.addPanel(soon);
@@ -129,7 +131,7 @@ public class GuiFactionSelect extends GuiScreenCanvas {
                     } catch (Exception e) {
                         QuestingReputation.log.error("Unable to return faction selection!", e);
                     }
-                    mc.displayGuiScreen(parent);
+                    mc.displayGuiScreen((GuiScreen) parent);
                 } else if (btn.getButtonID() == 1 && btn instanceof PanelButtonStorage pbs) {
                     Object f = pbs.getStoredValue();
                     if (f instanceof String s) {

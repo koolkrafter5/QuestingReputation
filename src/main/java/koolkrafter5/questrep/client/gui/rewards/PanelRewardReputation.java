@@ -10,6 +10,7 @@ import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.CanvasEmpty;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import koolkrafter5.questrep.reputation.FactionData;
 import koolkrafter5.questrep.rewards.RewardReputation;
 
 public class PanelRewardReputation extends CanvasEmpty {
@@ -23,15 +24,16 @@ public class PanelRewardReputation extends CanvasEmpty {
 
     public void initPanel() {
         super.initPanel();
-        // this.addPanel((new PanelTextBox(new GuiTransform(new Vector4f(0.0F, 0.5F, 1.0F, 0.5F), new GuiPadding(0, -16,
-        // 0, 0), 0), this.reward.score)).setAlignment(1).setColor(PresetColor.TEXT_MAIN.getColor()));
+        this.addPanel(
+            (new PanelTextBox(
+                new GuiTransform(new Vector4f(0.0F, 0.5F, 1.0F, 0.5F), new GuiPadding(0, -16, 0, 0), 0),
+                FactionData.getDisplayName(this.reward.faction))).setAlignment(1)
+                    .setColor(PresetColor.TEXT_MAIN.getColor()));
         String txt2 = EnumChatFormatting.BOLD.toString();
-        if (!this.reward.relative) {
-            txt2 = txt2 + "= " + this.reward.value;
-        } else if (this.reward.value >= 0) {
-            txt2 = txt2 + EnumChatFormatting.GREEN + "+ " + Math.abs(this.reward.value);
+        if (this.reward.amount >= 0) {
+            txt2 = txt2 + EnumChatFormatting.GREEN + "+ " + Math.abs(this.reward.amount);
         } else {
-            txt2 = txt2 + EnumChatFormatting.RED + "- " + Math.abs(this.reward.value);
+            txt2 = txt2 + EnumChatFormatting.RED + "- " + Math.abs(this.reward.amount);
         }
 
         this.addPanel(

@@ -12,15 +12,16 @@ import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.storage.DBEntry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import koolkrafter5.questrep.client.gui.editors.GuiEditReputationReward;
 import koolkrafter5.questrep.client.gui.rewards.PanelRewardReputation;
+import koolkrafter5.questrep.reputation.FactionData;
+import koolkrafter5.questrep.reputation.ReputationData;
 import koolkrafter5.questrep.rewards.factory.FactoryRewardReputation;
 
 public class RewardReputation implements IReward {
 
-    public String faction = "Reputation";
-    public String type = "dummy";
-    public boolean relative = true;
-    public int value = 1;
+    public String faction = FactionData.getDefaultFaction();
+    public int amount = 0;
 
     public RewardReputation() {}
 
@@ -29,7 +30,7 @@ public class RewardReputation implements IReward {
     }
 
     public String getUnlocalisedName() {
-        return "bq_standard.reward.scoreboard";
+        return "questrep.reward.reputation";
     }
 
     public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest) {
@@ -37,21 +38,18 @@ public class RewardReputation implements IReward {
     }
 
     public void claimReward(EntityPlayer player, DBEntry<IQuest> quest) {
-
+        ReputationData.get()
+            .addReputation(player, faction, amount);
     }
 
     public void readFromNBT(NBTTagCompound json) {
         this.faction = json.getString("faction");
-        this.type = json.getString("type");
-        this.value = json.getInteger("value");
-        this.relative = json.getBoolean("relative");
+        this.amount = json.getInteger("amount");
     }
 
     public NBTTagCompound writeToNBT(NBTTagCompound json) {
         json.setString("faction", this.faction);
-        json.setString("type", "dummy");
-        json.setInteger("value", this.value);
-        json.setBoolean("relative", this.relative);
+        json.setInteger("amount", this.amount);
         return json;
     }
 
@@ -62,6 +60,6 @@ public class RewardReputation implements IReward {
 
     @SideOnly(Side.CLIENT)
     public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest) {
-        return null;
+        return new GuiEditReputationReward(screen, quest, this);
     }
 }
