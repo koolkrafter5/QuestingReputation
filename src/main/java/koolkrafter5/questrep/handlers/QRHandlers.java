@@ -2,6 +2,7 @@ package koolkrafter5.questrep.handlers;
 
 import java.util.UUID;
 
+import koolkrafter5.questrep.network.DelayedSyncHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.stats.StatList;
@@ -42,6 +43,7 @@ public class QRHandlers {
             .writeStat(StatList.deathsStat); // Yes, writeStat is a reader.
         DeathData.get()
             .setDeaths(id, deathCount);
+        DelayedSyncHandler.queueSync(player.getUniqueID());
     }
 
     /**

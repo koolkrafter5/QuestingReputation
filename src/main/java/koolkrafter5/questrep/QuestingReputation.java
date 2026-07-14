@@ -1,5 +1,6 @@
 package koolkrafter5.questrep;
 
+import koolkrafter5.questrep.network.DelayedSyncHandler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -18,10 +19,8 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import koolkrafter5.questrep.command.AddRep;
-import koolkrafter5.questrep.command.SeeJson;
-import koolkrafter5.questrep.command.SeePartyID;
 import koolkrafter5.questrep.handlers.QRHandlers;
+import koolkrafter5.questrep.network.PacketHandler;
 import koolkrafter5.questrep.reputation.FactionData;
 import koolkrafter5.questrep.rewards.factory.FactoryRewardReputation;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskDeaths;
@@ -47,6 +46,7 @@ public class QuestingReputation {
     public void preInit(FMLPreInitializationEvent event) {
         log = event.getModLog();
         proxy.preInit(event);
+        PacketHandler.init();
     }
 
     @Mod.EventHandler
@@ -65,6 +65,7 @@ public class QuestingReputation {
         FactionData.loadFactions();
 
         MinecraftForge.EVENT_BUS.register(new QRHandlers());
+        MinecraftForge.EVENT_BUS.register(new DelayedSyncHandler());
     }
 
     @Mod.EventHandler
@@ -74,11 +75,7 @@ public class QuestingReputation {
     }
 
     @Mod.EventHandler
-    public static void serverLoad(FMLServerStartingEvent event) {
-        event.registerServerCommand(new SeeJson());
-        event.registerServerCommand(new SeePartyID());
-        event.registerServerCommand(new AddRep());
-    }
+    public static void serverLoad(FMLServerStartingEvent event) {}
 
     @Mod.EventHandler
     // register server commands in this event handler (Remove if not needed)

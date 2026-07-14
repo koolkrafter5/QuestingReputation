@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
@@ -20,6 +21,8 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.ParticipantInfo;
 import betterquesting.questing.party.PartyManager;
+import koolkrafter5.questrep.network.PacketHandler;
+import koolkrafter5.questrep.network.PacketReputationSync;
 import koolkrafter5.questrep.tasks.TaskReputation;
 
 public class ReputationData extends WorldSavedData {
@@ -111,6 +114,22 @@ public class ReputationData extends WorldSavedData {
         map.put(faction, getReputation(player, faction) + amount);
         updateReputationTasks(player);
         markDirty();
+        syncTo(player);
+    }
+
+    public void syncTo(EntityPlayer player) {
+        if (player == null) return;
+
+        NBTTagCompound tag = new NBTTagCompound();
+        Map<String, Integer> rep = getProperReputationMap(player);
+        NBTTagCompound playerNBT = new NBTTagCompound();
+
+        for (Map.Entry<String, Integer> e : rep.entrySet()) {
+            playerNBT.setInteger(e.getKey(), e.getValue());
+        }
+
+        tag.setTag("PlayerReputation", playerNBT);
+        PacketHandler.INSTANCE.sendTo(new PacketReputationSync(tag), (EntityPlayerMP) player);
     }
 
     /**

@@ -127,9 +127,9 @@ public class FactionData {
         mageTiers.add(createTier("Adept", 50));
         mageTiers.add(createTier("Master", 100));
 
-        mages.add("tiers", mageTiers);
         mages.addProperty("name", "Mages' Guild");
         mages.addProperty("defaultReputation", -50);
+        mages.add("tiers", mageTiers);
         root.add("mages", mages);
 
         try (Writer writer = new FileWriter(configFile)) {
@@ -196,9 +196,10 @@ public class FactionData {
      * Gets the name of the tier the given reputation is part of for the given faction.
      * A reputation value is part of a tier if it is greater than the tier value (if above zero), below the
      * tier value (if below zero), or neutral if equal to zero.
+     * Translation keys are automatically translated to local.
      */
     public static synchronized String getTierName(String faction, int rep) {
-        return getTier(faction, rep).name;
+        return StatCollector.translateToLocal(getTier(faction, rep).name);
     }
 
     /**
@@ -259,7 +260,8 @@ public class FactionData {
     }
 
     /**
-     * Returns the display name for the given faction (automatically translates translation keys!)
+     * Returns the display name for the given faction.
+     * Translation keys are automatically translated to local.
      */
     public static synchronized String getDisplayName(String factionId) {
         return StatCollector.translateToLocalFormatted(names.getOrDefault(factionId, factionId));

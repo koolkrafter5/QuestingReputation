@@ -2,7 +2,6 @@ package koolkrafter5.questrep.client.gui.tasks;
 
 import java.awt.*;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.StatCollector;
 
 import betterquesting.api2.client.gui.misc.GuiRectangle;
@@ -11,8 +10,8 @@ import betterquesting.api2.client.gui.panels.CanvasEmpty;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.resources.colors.GuiColorStatic;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import koolkrafter5.questrep.network.ClientReputationCache;
 import koolkrafter5.questrep.reputation.FactionData;
-import koolkrafter5.questrep.reputation.ReputationData;
 import koolkrafter5.questrep.tasks.TaskReputation;
 
 public class PanelTaskReputation extends CanvasEmpty {
@@ -35,8 +34,7 @@ public class PanelTaskReputation extends CanvasEmpty {
             .setFontSize(12);
         this.addPanel(target);
 
-        int rep = ReputationData.get()
-            .getReputation(Minecraft.getMinecraft().thePlayer, task.faction);
+        int rep = ClientReputationCache.getReputation(task.faction);
         PanelTextBox current = new PanelTextBox(
             new GuiRectangle(0, 50, 200, 20, 0),
             StatCollector.translateToLocalFormatted(
