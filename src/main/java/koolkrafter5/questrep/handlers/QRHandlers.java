@@ -1,8 +1,8 @@
 package koolkrafter5.questrep.handlers;
 
+import java.util.Map;
 import java.util.UUID;
 
-import koolkrafter5.questrep.network.DelayedSyncHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.stats.StatList;
@@ -16,6 +16,7 @@ import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.ParticipantInfo;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import koolkrafter5.questrep.deaths.DeathData;
+import koolkrafter5.questrep.network.DelayedSyncHandler;
 import koolkrafter5.questrep.reputation.ReputationData;
 import koolkrafter5.questrep.tasks.TaskDeaths;
 
@@ -67,8 +68,9 @@ public class QRHandlers {
 
     private void updateDeathTasks(EntityPlayer player) {
         ParticipantInfo pInfo = new ParticipantInfo(player);
-        for (DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB)
-            .bulkLookup(pInfo.getSharedQuests())) {
+        for (Map.Entry<UUID, IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB)
+            .filterKeys(pInfo.getSharedQuests())
+            .entrySet()) {
             for (DBEntry<ITask> task : (entry.getValue()).getTasks()
                 .getEntries()) {
                 if (task.getValue() instanceof TaskDeaths) {

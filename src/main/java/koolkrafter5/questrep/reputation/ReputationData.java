@@ -148,8 +148,9 @@ public class ReputationData extends WorldSavedData {
 
     public void updateReputationTasks(EntityPlayer player) {
         ParticipantInfo pInfo = new ParticipantInfo(player);
-        for (DBEntry<IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB)
-            .bulkLookup(pInfo.getSharedQuests())) {
+        for (Map.Entry<UUID, IQuest> entry : QuestingAPI.getAPI(ApiReference.QUEST_DB)
+            .filterKeys(pInfo.getSharedQuests())
+            .entrySet()) {
             for (DBEntry<ITask> task : (entry.getValue()).getTasks()
                 .getEntries()) {
                 if (task.getValue() instanceof TaskReputation) {

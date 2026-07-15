@@ -1,8 +1,10 @@
 package koolkrafter5.questrep.client.gui.editors;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.StatCollector;
 
 import org.lwjgl.input.Keyboard;
@@ -19,7 +21,6 @@ import betterquesting.api2.client.gui.panels.CanvasTextured;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
-import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
 import betterquesting.network.handlers.NetQuestEdit;
 import koolkrafter5.questrep.reputation.FactionData;
@@ -27,12 +28,12 @@ import koolkrafter5.questrep.rewards.RewardReputation;
 
 public class GuiEditReputationReward extends GuiScreenCanvas implements IFactionSelectionReceiver {
 
-    private final DBEntry<IQuest> quest;
+    private final Map.Entry<UUID, IQuest> quest;
     private final RewardReputation reward;
 
     private PanelTextBox currentFaction;
 
-    public GuiEditReputationReward(GuiScreen parent, DBEntry<IQuest> quest, RewardReputation reward) {
+    public GuiEditReputationReward(GuiScreen parent, Map.Entry<UUID, IQuest> quest, RewardReputation reward) {
         super(parent);
         this.quest = quest;
         this.reward = reward;
@@ -111,17 +112,6 @@ public class GuiEditReputationReward extends GuiScreenCanvas implements IFaction
     }
 
     private void sendChanges() {
-        NBTTagCompound payload = new NBTTagCompound();
-        NBTTagList dataList = new NBTTagList();
-        NBTTagCompound entry = new NBTTagCompound();
-        entry.setInteger("questID", quest.getID());
-        entry.setTag(
-            "config",
-            quest.getValue()
-                .writeToNBT(new NBTTagCompound()));
-        dataList.appendTag(entry);
-        payload.setTag("data", dataList);
-        payload.setInteger("action", 0);
-        NetQuestEdit.sendEdit(payload);
+        NetQuestEdit.requestEdit(Collections.singletonMap(quest.getKey(), quest.getValue()));
     }
 }

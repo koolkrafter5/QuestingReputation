@@ -1,5 +1,8 @@
 package koolkrafter5.questrep.rewards;
 
+import java.util.Map;
+import java.util.UUID;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -9,7 +12,6 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.storage.DBEntry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import koolkrafter5.questrep.client.gui.editors.GuiEditReputationReward;
@@ -35,11 +37,11 @@ public class RewardReputation implements IReward {
         return "questrep.reward.reputation";
     }
 
-    public boolean canClaim(EntityPlayer player, DBEntry<IQuest> quest) {
+    public boolean canClaim(EntityPlayer player, Map.Entry<UUID, IQuest> quest) {
         return true;
     }
 
-    public void claimReward(EntityPlayer player, DBEntry<IQuest> quest) {
+    public void claimReward(EntityPlayer player, Map.Entry<UUID, IQuest> quest) {
         if (player.worldObj.isRemote) {
             // Client side — send packet to server
             PacketHandler.INSTANCE.sendToServer(new PacketClaimReputationReward(player.getUniqueID(), faction, amount));
@@ -61,12 +63,12 @@ public class RewardReputation implements IReward {
     }
 
     @SideOnly(Side.CLIENT)
-    public IGuiPanel getRewardGui(IGuiRect rect, DBEntry<IQuest> quest) {
+    public IGuiPanel getRewardGui(IGuiRect rect, Map.Entry<UUID, IQuest> quest) {
         return new PanelRewardReputation(rect, this);
     }
 
     @SideOnly(Side.CLIENT)
-    public GuiScreen getRewardEditor(GuiScreen screen, DBEntry<IQuest> quest) {
+    public GuiScreen getRewardEditor(GuiScreen screen, Map.Entry<UUID, IQuest> quest) {
         return new GuiEditReputationReward(screen, quest, this);
     }
 }

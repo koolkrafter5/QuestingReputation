@@ -1,6 +1,5 @@
 package koolkrafter5.questrep;
 
-import koolkrafter5.questrep.network.DelayedSyncHandler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -20,6 +19,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import koolkrafter5.questrep.handlers.QRHandlers;
+import koolkrafter5.questrep.network.DelayedSyncHandler;
 import koolkrafter5.questrep.network.PacketHandler;
 import koolkrafter5.questrep.reputation.FactionData;
 import koolkrafter5.questrep.rewards.factory.FactoryRewardReputation;

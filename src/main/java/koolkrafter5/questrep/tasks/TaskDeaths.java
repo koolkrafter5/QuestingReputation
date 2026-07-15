@@ -1,7 +1,7 @@
 package koolkrafter5.questrep.tasks;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -21,7 +21,6 @@ import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
-import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.ParticipantInfo;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -43,14 +42,14 @@ public class TaskDeaths implements ITask {
     }
 
     @Override
-    public void detect(ParticipantInfo participant, DBEntry<IQuest> quest) {
+    public void detect(ParticipantInfo participant, Map.Entry<UUID, IQuest> quest) {
         UUID playerID = QuestingAPI.getQuestingUUID(participant.PLAYER);
         if (isComplete(playerID)) return;
 
         progress = getProgress(participant);
         if (progress >= target) {
             setComplete(participant.ALL_UUIDS);
-            participant.markDirtyParty(Collections.singletonList(quest.getID()));
+            participant.markDirtyParty(quest.getKey());
         }
     }
 
@@ -80,8 +79,9 @@ public class TaskDeaths implements ITask {
         }
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
-    public IGuiPanel getTaskGui(IGuiRect rect, DBEntry<IQuest> quest) {
+    public IGuiPanel getTaskGui(IGuiRect rect, Map.Entry<UUID, IQuest> quest) {
         return new PanelTaskDeaths(rect, this);
     }
 
@@ -126,7 +126,7 @@ public class TaskDeaths implements ITask {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public GuiScreen getTaskEditor(GuiScreen parent, DBEntry<IQuest> quest) {
+    public GuiScreen getTaskEditor(GuiScreen parent, Map.Entry<UUID, IQuest> quest) {
         return new GuiEditTaskDeaths(parent, quest, this);
     }
 

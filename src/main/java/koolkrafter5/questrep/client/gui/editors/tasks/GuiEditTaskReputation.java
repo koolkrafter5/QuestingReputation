@@ -3,18 +3,15 @@ package koolkrafter5.questrep.client.gui.editors.tasks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 
 import org.lwjgl.input.Keyboard;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
 import betterquesting.api2.client.gui.controls.PanelButton;
@@ -27,8 +24,8 @@ import betterquesting.api2.client.gui.panels.CanvasTextured;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
-import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
+import betterquesting.network.handlers.NetQuestEdit;
 import koolkrafter5.questrep.client.gui.editors.GuiFactionSelect;
 import koolkrafter5.questrep.client.gui.editors.IFactionSelectionReceiver;
 import koolkrafter5.questrep.reputation.FactionData;
@@ -38,7 +35,7 @@ import koolkrafter5.questrep.tasks.TaskReputation;
 public class GuiEditTaskReputation extends GuiScreenCanvas implements IFactionSelectionReceiver {
 
     private static final ResourceLocation QUEST_EDIT = new ResourceLocation("betterquesting:quest_edit");
-    private final DBEntry<IQuest> quest;
+    private final Map.Entry<UUID, IQuest> quest;
     private final TaskReputation task;
 
     private int lowerTierIndex, upperTierIndex;
@@ -50,7 +47,7 @@ public class GuiEditTaskReputation extends GuiScreenCanvas implements IFactionSe
     private PanelButton lowerMin, lowerDec, lowerInc, lowerMax;
     private PanelButton upperMin, upperDec, upperInc, upperMax;
 
-    public GuiEditTaskReputation(GuiScreen parent, DBEntry<IQuest> quest, TaskReputation task) {
+    public GuiEditTaskReputation(GuiScreen parent, Map.Entry<UUID, IQuest> quest, TaskReputation task) {
         super(parent);
         this.quest = quest;
         this.task = task;
@@ -486,19 +483,7 @@ public class GuiEditTaskReputation extends GuiScreenCanvas implements IFactionSe
     }
 
     private void sendChanges() {
-        NBTTagCompound payload = new NBTTagCompound();
-        NBTTagList dataList = new NBTTagList();
-        NBTTagCompound entry = new NBTTagCompound();
-        entry.setInteger("questID", quest.getID());
-        entry.setTag(
-            "config",
-            quest.getValue()
-                .writeToNBT(new NBTTagCompound()));
-        dataList.appendTag(entry);
-        payload.setTag("data", dataList);
-        payload.setInteger("action", 0); // Action: Update data
-        QuestingAPI.getAPI(ApiReference.PACKET_SENDER)
-            .sendToServer(new QuestingPacket(QUEST_EDIT, payload));
+        NetQuestEdit.requestEdit(Collections.singletonMap(quest.getKey(), quest.getValue()));
     }
 
     @Override

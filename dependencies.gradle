@@ -34,7 +34,8 @@
  * For more details, see https://docs.gradle.org/8.0.1/userguide/java_library_plugin.html#sec:java_library_configurations_graph
  */
 dependencies {
+    api("com.github.GTNewHorizons:BetterQuesting:3.8.74-GTNH:dev")
+
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.38-GTNH:dev")
-    api("curse.maven:BetterQuesting-238856:2950244")
-    runtimeOnlyNonPublishable("curse.maven:BetterQuestingStandardExpansion-238857:2950287")
+    runtimeOnlyNonPublishable("com.github.GTNewHorizons:GTNHLib:0.11.30:dev")
 }

@@ -1,15 +1,14 @@
 package koolkrafter5.questrep.client.gui.editors.tasks;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 
-import betterquesting.api.api.ApiReference;
-import betterquesting.api.api.QuestingAPI;
-import betterquesting.api.network.QuestingPacket;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api2.client.gui.GuiScreenCanvas;
 import betterquesting.api2.client.gui.controls.PanelButton;
@@ -25,17 +24,17 @@ import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
 import betterquesting.api2.client.gui.themes.presets.PresetLine;
 import betterquesting.api2.client.gui.themes.presets.PresetTexture;
-import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
+import betterquesting.network.handlers.NetQuestEdit;
 import koolkrafter5.questrep.tasks.TaskDeaths;
 
 public class GuiEditTaskDeaths extends GuiScreenCanvas {
 
-    private final DBEntry<IQuest> quest;
+    private final Map.Entry<UUID, IQuest> quest;
     private final TaskDeaths task;
     private static final ResourceLocation QUEST_EDIT = new ResourceLocation("betterquesting:quest_edit");
 
-    public GuiEditTaskDeaths(GuiScreen parent, DBEntry<IQuest> quest, TaskDeaths task) {
+    public GuiEditTaskDeaths(GuiScreen parent, Map.Entry<UUID, IQuest> quest, TaskDeaths task) {
         super(parent);
         this.quest = quest;
         this.task = task;
@@ -148,18 +147,6 @@ public class GuiEditTaskDeaths extends GuiScreenCanvas {
     // }
 
     private void sendChanges() {
-        NBTTagCompound payload = new NBTTagCompound();
-        NBTTagList dataList = new NBTTagList();
-        NBTTagCompound entry = new NBTTagCompound();
-        entry.setInteger("questID", quest.getID());
-        entry.setTag(
-            "config",
-            quest.getValue()
-                .writeToNBT(new NBTTagCompound()));
-        dataList.appendTag(entry);
-        payload.setTag("data", dataList);
-        payload.setInteger("action", 0); // Action: Update data
-        QuestingAPI.getAPI(ApiReference.PACKET_SENDER)
-            .sendToServer(new QuestingPacket(QUEST_EDIT, payload));
+        NetQuestEdit.requestEdit(Collections.singletonMap(quest.getKey(), quest.getValue()));
     }
 }
