@@ -32,9 +32,7 @@ public class ReputationData extends WorldSavedData {
     private final Map<UUID, Map<String, Integer>> playerReputation = new HashMap<>();
     private final Map<Integer, Map<String, Integer>> partyReputation = new HashMap<>();
 
-    /**
-     * Needed for saving/loading to work properly
-     */
+    @SuppressWarnings("unused") // Needed for saving/loading to work properly due to WorldSavedData reflection
     public ReputationData() {
         super("");
     }
@@ -47,8 +45,16 @@ public class ReputationData extends WorldSavedData {
      * Get the player's (party's) reputation level for every faction. No defaults are generated if the player (or
      * party) has no reputation with a given faction.
      */
-    public synchronized Map<String, Integer> getAllReputations(EntityPlayer player) {
-        return getProperReputationMap(player);
+    public Map<String, Integer> getAllReputations(EntityPlayer player) {
+        return getAllReputations(player.getUniqueID());
+    }
+
+    /**
+     * Get the player's (party's) reputation level for every faction. No defaults are generated if the player (or
+     * party) has no reputation with a given faction.
+     */
+    public Map<String, Integer> getAllReputations(UUID uuid) {
+        return getProperReputationMap(uuid);
     }
 
     /**
@@ -58,8 +64,19 @@ public class ReputationData extends WorldSavedData {
      * @param player  The player to check.
      * @param faction The reputation faction to query.
      */
-    public synchronized int getReputation(EntityPlayer player, String faction) {
-        return getAllReputations(player).getOrDefault(faction, FactionData.getDefaultReputation(faction));
+    public int getReputation(EntityPlayer player, String faction) {
+        return getReputation(player.getUniqueID(), faction);
+    }
+
+    /**
+     * Gets the player's (party's) reputation level for the given faction. Defaults to 0 if the player (or party)
+     * has no reputation with that faction.
+     *
+     * @param uuid    The UUID of the player to check.
+     * @param faction The reputation faction to query.
+     */
+    public int getReputation(UUID uuid, String faction) {
+        return getProperReputationMap(uuid).getOrDefault(faction, FactionData.getDefaultReputation(faction));
     }
 
     /**
@@ -73,6 +90,10 @@ public class ReputationData extends WorldSavedData {
      */
     private Map<String, Integer> getProperReputationMap(EntityPlayer player) {
         UUID id = player.getUniqueID();
+        return getProperReputationMap(id);
+    }
+
+    private synchronized Map<String, Integer> getProperReputationMap(UUID id) {
         DBEntry<IParty> party = PartyManager.INSTANCE.getParty(id);
         if (party != null) {
             int pID = party.getID();

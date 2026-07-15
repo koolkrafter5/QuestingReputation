@@ -1,15 +1,15 @@
 package koolkrafter5.questrep.reputation;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
-import java.util.ArrayList;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,21 +19,17 @@ import net.minecraft.util.StatCollector;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
-import koolkrafter5.questrep.QRConfig;
+import betterquesting.api.utils.BigItemStack;
 import koolkrafter5.questrep.QuestingReputation;
 
 public class FactionData {
 
     public static final List<ReputationTier> UNKNOWN_TIERS = Collections.singletonList(ReputationTier.UNKNOWN);
 
-    private static final Map<String, List<ReputationTier>> tiers = new HashMap<>();
-    private static final Map<String, String> names = new HashMap<>();
-    private static final Map<String, Integer> deathChange = new HashMap<>();
-    private static final Map<String, Integer> defaultReputation = new HashMap<>();
+    private static final Map<String, Faction> factions = new LinkedHashMap<>();
 
     private static final String configPath = "config/questingreputation/factions.json";
 
@@ -44,54 +40,20 @@ public class FactionData {
             createDefaultConfig(configFile);
         }
 
-        try (Reader reader = new FileReader(configFile)) {
-            JsonObject json = new JsonParser().parse(reader)
-                .getAsJsonObject();
+        Gson gson = new GsonBuilder().registerTypeAdapter(BigItemStack.class, new BigItemStackAdapter())
+            .create();
 
-            for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
-                String factionName = entry.getKey();
-                JsonObject factionObject = entry.getValue()
-                    .getAsJsonObject();
-                JsonArray tiersArray = factionObject.getAsJsonArray("tiers");
-
-                setDisplayName(
-                    factionName,
-                    factionObject.has("name") ? factionObject.get("name")
-                        .getAsString() : factionName);
-
-                List<ReputationTier> tierList = new ArrayList<>();
-
-                for (JsonElement element : tiersArray) {
-                    JsonObject tierObj = element.getAsJsonObject();
-                    ReputationTier tier = new ReputationTier();
-                    tier.name = tierObj.get("name")
-                        .getAsString();
-                    tier.value = tierObj.get("value")
-                        .getAsInt();
-                    tierList.add(tier);
-                }
-
-                tierList.sort(Comparator.comparingInt(t -> t.value));
-                setAllTiers(factionName, tierList);
-
-                setDeathChange(
-                    factionName,
-                    factionObject.has("deathChange") ? factionObject.get("deathChange")
-                        .getAsInt() : QRConfig.defaultDeathChange);
-
-                setDefaultReputation(
-                    factionName,
-                    factionObject.has("defaultReputation") ? factionObject.get("defaultReputation")
-                        .getAsInt() : QRConfig.defaultReputation);
-            }
-
+        try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
+            Type type = new TypeToken<Map<String, Faction>>() {}.getType();
+            getFactions().clear();
+            getFactions().putAll(gson.fromJson(br, type));
         } catch (Exception e) {
             QuestingReputation.log.error("Failed to load faction reputation config: {}", e);
         }
     }
 
     private static void setDisplayName(String factionID, String displayName) {
-        names.put(factionID, displayName);
+        getFactions().get(factionID).name = displayName;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -105,6 +67,7 @@ public class FactionData {
 
         JsonObject knights = new JsonObject();
         knights.addProperty("name", "Order of the Knights");
+        knights.addProperty("item", "minecraft:iron_sword");
         knights.addProperty("deathChange", -10);
         JsonArray knightTiers = new JsonArray();
 
@@ -128,6 +91,7 @@ public class FactionData {
         mageTiers.add(createTier("Master", 100));
 
         mages.addProperty("name", "Mages' Guild");
+        mages.addProperty("item", "minecraft:stick");
         mages.addProperty("defaultReputation", -50);
         mages.add("tiers", mageTiers);
         root.add("mages", mages);
@@ -147,7 +111,7 @@ public class FactionData {
      * A reputation value is part of a tier if it is greater than the tier value (if above zero), below the
      * tier value (if below zero), or neutral if equal to zero.
      */
-    public static synchronized ReputationTier getTier(String faction, int rep) {
+    public static ReputationTier getTier(String faction, int rep) {
         if (rep == Integer.MAX_VALUE) {
             return ReputationTier.MAX_INT;
         } else if (rep == Integer.MIN_VALUE) {
@@ -156,18 +120,18 @@ public class FactionData {
         List<ReputationTier> tiers = getTiers(faction);
         if (tiers == null || tiers.isEmpty()) return ReputationTier.UNKNOWN;
 
-        tiers.sort(Comparator.comparingInt(t -> t.value));
+        tiers.sort(Comparator.comparingInt(ReputationTier::value));
 
         if (rep == 0) {
             for (ReputationTier tier : tiers) {
-                if (tier.value == 0) {
+                if (tier.value() == 0) {
                     return tier;
                 }
             }
         } else if (rep > 0) {
             ReputationTier best = null;
             for (ReputationTier tier : tiers) {
-                if (tier.value <= rep) {
+                if (tier.value() <= rep) {
                     best = tier;
                 } else {
                     break;
@@ -176,7 +140,7 @@ public class FactionData {
             return best != null ? best : ReputationTier.UNKNOWN;
         } else {
             for (ReputationTier tier : tiers) {
-                if (tier.value >= rep) {
+                if (tier.value() >= rep) {
                     return tier;
                 }
             }
@@ -198,8 +162,8 @@ public class FactionData {
      * tier value (if below zero), or neutral if equal to zero.
      * Translation keys are automatically translated to local.
      */
-    public static synchronized String getTierName(String faction, int rep) {
-        return StatCollector.translateToLocal(getTier(faction, rep).name);
+    public static String getTierName(String faction, int rep) {
+        return StatCollector.translateToLocal(getTier(faction, rep).name());
     }
 
     /**
@@ -207,8 +171,8 @@ public class FactionData {
      * A reputation value is part of a tier if it is greater than the tier value (if above zero), below the
      * tier value (if below zero), or neutral if equal to zero.
      */
-    public static synchronized int getTierValue(String faction, int rep) {
-        return getTier(faction, rep).value;
+    public static int getTierValue(String faction, int rep) {
+        return getTier(faction, rep).value();
     }
 
     /**
@@ -217,8 +181,9 @@ public class FactionData {
      * @param faction The faction to query.
      * @return A List of ReputationTiers.
      */
-    public static synchronized List<ReputationTier> getTiers(String faction) {
-        return tiers.getOrDefault(faction, UNKNOWN_TIERS);
+    public static List<ReputationTier> getTiers(String faction) {
+        Faction f = getFactions().get(faction);
+        return f != null ? f.tiers : UNKNOWN_TIERS;
     }
 
     /**
@@ -227,22 +192,22 @@ public class FactionData {
      * @param faction The faction to set tiers for.
      * @param tiers   A list of ReputationTiers to add.
      */
-    public static synchronized void setAllTiers(String faction, List<ReputationTier> tiers) {
-        if (!FactionData.tiers.containsKey(faction)) {
-            FactionData.tiers.put(faction, new ArrayList<>());
-        }
+    public static void setAllTiers(String faction, List<ReputationTier> tiers) {
+        getFactions().computeIfAbsent(faction, Faction::new);
         clearTiers(faction);
-        FactionData.tiers.get(faction)
-            .addAll(tiers);
-        FactionData.tiers.get(faction)
-            .sort(Comparator.comparingInt(t -> t.value));
+        getFactions().get(faction).tiers.addAll(tiers);
+        getFactions().get(faction).tiers.sort(Comparator.comparingInt(ReputationTier::value));
+    }
+
+    private static synchronized Map<String, Faction> getFactions() {
+        return factions;
     }
 
     /**
      * Clears tiers for every faction.
      */
-    public static synchronized void clearAllTiers() {
-        for (String faction : tiers.keySet()) {
+    public static void clearAllTiers() {
+        for (String faction : getFactions().keySet()) {
             clearTiers(faction);
         }
     }
@@ -252,10 +217,9 @@ public class FactionData {
      *
      * @param faction The faction's tiers to clear
      */
-    public static synchronized void clearTiers(String faction) {
-        if (faction != null && tiers.containsKey(faction)) {
-            tiers.get(faction)
-                .clear();
+    public static void clearTiers(String faction) {
+        if (faction != null && getFactions().containsKey(faction)) {
+            getFactions().get(faction).tiers.clear();
         }
     }
 
@@ -263,44 +227,89 @@ public class FactionData {
      * Returns the display name for the given faction.
      * Translation keys are automatically translated to local.
      */
-    public static synchronized String getDisplayName(String factionId) {
-        return StatCollector.translateToLocalFormatted(names.getOrDefault(factionId, factionId));
+    public static String getDisplayName(String faction) {
+        if (!getFactions().containsKey(faction)) {
+            QuestingReputation.log.warn("Tried to getDisplayName for nonexistent faction {}", faction);
+            return Faction.UNKNOWN.name;
+        }
+        return StatCollector.translateToLocal(getFactions().get(faction).name);
     }
 
     /**
      * Returns a set that contains every faction ID.
      */
-    public static synchronized Set<String> getAllFactions() {
-        return tiers.keySet();
+    public static Set<String> getAllFactions() {
+        return getFactions().keySet();
     }
 
     /**
      * Returns the value that reputation will change by for each death for the given faction.
      */
-    public static synchronized int getDeathChange(String faction) {
-        return deathChange.getOrDefault(faction, QRConfig.defaultDeathChange);
+    public static int getDeathChange(String faction) {
+        if (!getFactions().containsKey(faction)) {
+            QuestingReputation.log.warn("Tried to getDeathChange for nonexistent faction {}", faction);
+            return Faction.UNKNOWN.deathChange;
+        }
+        return getFactions().get(faction).deathChange;
     }
 
     /**
      * Set the value that reputation will change by for each death to the given value for the given faction.
      */
-    public static synchronized void setDeathChange(String faction, int value) {
-        deathChange.put(faction, value);
+    public static void setDeathChange(String faction, int value) {
+        if (!getFactions().containsKey(faction)) {
+            QuestingReputation.log.warn("Tried to setDeathChange for nonexistent faction {}", faction);
+            return;
+        }
+        getFactions().get(faction).deathChange = value;
     }
 
     public static Integer getDefaultReputation(String faction) {
-        return defaultReputation.getOrDefault(faction, QRConfig.defaultReputation);
+        if (!getFactions().containsKey(faction)) {
+            QuestingReputation.log.warn("Tried to getDefaultReputation for nonexistent faction {}", faction);
+            return Faction.UNKNOWN.defaultReputation;
+        }
+        return getFactions().get(faction).defaultReputation;
     }
 
     public static void setDefaultReputation(String faction, int value) {
-        defaultReputation.put(faction, value);
+        if (!getFactions().containsKey(faction)) {
+            QuestingReputation.log.warn("Tried to setDefaultReputation for nonexistent faction {}", faction);
+            return;
+        }
+        getFactions().get(faction).defaultReputation = value;
     }
 
     public static String getDefaultFaction() {
         Set<String> factions = getAllFactions();
         if (factions.isEmpty()) {
-            return "none";
+            return Faction.UNKNOWN.name;
         }
         return (String) factions.toArray()[0];
+    }
+
+    /**
+     * Returns the item stack to display for the given faction in quests.
+     */
+    public static BigItemStack getRepresentativeStack(String faction) {
+        if (!getFactions().containsKey(faction)) {
+            QuestingReputation.log.warn("Tried to getRepresentativeStack for nonexistent faction {}", faction);
+            return Faction.UNKNOWN.item;
+        }
+        return getFactions().get(faction).item;
+    }
+
+    /**
+     * Sets the item stack to display for the given faction in quests.
+     */
+    public static void setRepresentativeStack(String faction, BigItemStack value) {
+        if (!getFactions().containsKey(faction)) {
+            QuestingReputation.log.warn("Tried to setRepresentativeStack for nonexistent faction {}", faction);
+            return;
+        } else if (value == null) {
+            QuestingReputation.log.warn("Tried to setRepresentativeStack with null itemstack for faction {}", faction);
+            return;
+        }
+        getFactions().get(faction).item = value;
     }
 }
