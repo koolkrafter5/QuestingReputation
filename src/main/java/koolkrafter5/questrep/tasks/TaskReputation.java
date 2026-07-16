@@ -19,10 +19,10 @@ import org.apache.logging.log4j.Level;
 
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.utils.ParticipantInfo;
+import bq_standard.tasks.base.TaskProgressableBase;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import koolkrafter5.questrep.QuestingReputation;
@@ -33,7 +33,7 @@ import koolkrafter5.questrep.reputation.ReputationData;
 import koolkrafter5.questrep.reputation.ReputationTier;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskReputation;
 
-public class TaskReputation implements ITask {
+public class TaskReputation extends TaskProgressableBase<int[]> {
 
     private final Set<UUID> completeUsers = new TreeSet<>();
     public String faction = FactionData.getDefaultFaction();
@@ -84,12 +84,28 @@ public class TaskReputation implements ITask {
     }
 
     @Override
+    public int[] getUsersProgress(UUID uuid) {
+        return new int[] { ReputationData.get()
+            .getReputation(uuid, faction) };
+    }
+
+    @Override
     public void resetUser(@Nullable UUID uuid) {
         if (uuid == null) {
             completeUsers.clear();
         } else {
             completeUsers.remove(uuid);
         }
+    }
+
+    @Override
+    public int[] readUserProgressFromNBT(NBTTagCompound nbt) {
+        return new int[] { nbt.getInteger("data") };
+    }
+
+    @Override
+    public void writeUserProgressToNBT(NBTTagCompound nbt, int[] progress) {
+        nbt.setInteger("data", progress[0]);
     }
 
     @Override
@@ -104,48 +120,50 @@ public class TaskReputation implements ITask {
         return new GuiEditTaskReputation(parent, quest, this);
     }
 
-    public String targetText() {
-        String name = FactionData.getDisplayName(faction);
-
-        if (lowerBound > upperBound) {
-            return StatCollector.translateToLocal("questrep.label.reputation.invalid");
-        }
-
-        if (lowerBound == Integer.MIN_VALUE && upperBound == Integer.MAX_VALUE) {
-            return StatCollector.translateToLocal("questrep.label.reputation.noBounds");
-        }
-
-        if (!invert) {
-            if (lowerBound != Integer.MIN_VALUE && upperBound != Integer.MAX_VALUE) {
-                if (lowerBound == upperBound) return name + " == " + format(lowerBound);
-                return format(lowerBound) + " <= " + name + " <= " + format(upperBound);
-            } else if (lowerBound != Integer.MIN_VALUE) {
-                return name + " >= " + format(lowerBound);
+    public void targetText(StringBuilder sb) {
+        if (lowerBound == upperBound) {
+            sb.append(
+                invert ? tr("questrep.task.target.not", lowerBound) : tr("questrep.task.target.exact", lowerBound));
+        } else if (lowerBound > upperBound) {
+            sb.append(StatCollector.translateToLocal("questrep.task.target.invalid"));
+        } else if (lowerBound == Integer.MIN_VALUE) {
+            if (upperBound == Integer.MAX_VALUE) {
+                sb.append(StatCollector.translateToLocal("questrep.task.target.unconfigured"));
             } else {
-                return name + " <= " + format(upperBound);
+                sb.append(
+                    invert ? tr("questrep.task.target.over", upperBound)
+                        : tr("questrep.task.target.at_most", upperBound));
             }
+        } else if (upperBound == Integer.MAX_VALUE) {
+            sb.append(
+                invert ? tr("questrep.task.target.under", lowerBound)
+                    : tr("questrep.task.target.at_least", lowerBound));
+        } else if (invert) {
+            sb.append(tr("questrep.task.target.under", lowerBound));
+            sb.append("\n");
+            sb.append(tr("questrep.task.target.or_over", upperBound));
         } else {
-            if (lowerBound != Integer.MIN_VALUE && upperBound != Integer.MAX_VALUE) {
-                if (lowerBound == upperBound) return name + " != " + format(lowerBound);
-                return name + " < " + format(lowerBound) + " or " + name + " > " + format(upperBound);
-            } else if (lowerBound != Integer.MIN_VALUE) {
-                return name + " < " + format(lowerBound);
-            } else {
-                return name + " > " + format(upperBound);
-            }
+            sb.append(tr("questrep.task.target.at_least", lowerBound));
+            sb.append("\n");
+            sb.append(tr("questrep.task.target.and_at_most", upperBound));
         }
+        sb.append("\n");
+    }
+
+    private static String tr(String key, int arg) {
+        return StatCollector.translateToLocalFormatted(key, arg);
     }
 
     /**
      * Formats the value in the form Tiername (Value) if it matches a tier. Otherwise, it just returns the value as a
      * String.
      */
-    private String format(int value) {
+    public String formatRepAsTier(int value) {
         List<ReputationTier> tiers = FactionData.getTiers(faction);
         if (tiers != null) {
             for (ReputationTier tier : tiers) {
-                if (tier.value == value) {
-                    return tier.name + " (" + value + ")";
+                if (tier.value() == value) {
+                    return tier.name() + " (" + value + ")";
                 }
             }
         }
@@ -197,5 +215,11 @@ public class TaskReputation implements ITask {
         lowerBound = json.getInteger("lowerBound");
         upperBound = json.getInteger("upperBound");
         invert = json.getBoolean("invert");
+    }
+
+    public String targetText() {
+        StringBuilder sb = new StringBuilder();
+        targetText(sb);
+        return sb.toString();
     }
 }

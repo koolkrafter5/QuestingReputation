@@ -5,13 +5,23 @@ questrep.gui.deaths.incomplete=You've died %d of %d times.
 questrep.gui.deaths.complete=You've died %d times.
 # Editing Text
 questrep.title.edit_deaths_task=Edit Number of Deaths Task
-questrep.label.deaths=Required Deaths:
+questrep.label.deaths=Deaths
 
 # Reputation Task
 # Quest Text
 questrep.gui.reputation.name=Reputation Requirement Task
-questrep.gui.reputation.required=Required %s Reputation: %s
+questrep.gui.reputation.faction=Faction: %s
 questrep.gui.reputation.current=Current: %s (%s)
+questrep.task.target.exact=Target: %s
+questrep.task.target.not=Target: not %s
+questrep.task.target.at_most=Target: at most %s
+questrep.task.target.at_least=Target: at least %s
+questrep.task.target.and_at_most=and at most %s
+questrep.task.target.over=Target: over %s
+questrep.task.target.under=Target: under %s
+questrep.task.target.or_over=or over %s
+questrep.task.target.unconfigured=§c§lUnconfigured task
+questrep.task.target.invalid=§c§lInvalid: lower bound is greater than upper bound
 # Editing Text
 questrep.gui.edit_reputation_task=Edit Reputation Requirement Task
 questrep.label.reputation.faction=Selected Faction: %s
@@ -20,8 +30,6 @@ questrep.label.reputation.lower=Lower Bound: %s
 questrep.label.reputation.upper=Upper Bound: %s
 questrep.label.reputation.none=None
 questrep.label.reputation.invert=Invert Range: %s
-questrep.label.reputation.invalid=Invalid: lower bound is greater than upper bound
-questrep.label.reputation.noBounds=No reputation bounds set
 # Editing Buttons
 questrep.button.reputation.remove.lower=Remove Lower Bound
 questrep.button.reputation.remove.upper=Remove Upper Bound

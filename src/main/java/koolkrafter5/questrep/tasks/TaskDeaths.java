@@ -18,10 +18,10 @@ import org.apache.logging.log4j.Level;
 
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.IQuest;
-import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import betterquesting.api2.utils.ParticipantInfo;
+import bq_standard.tasks.base.TaskProgressableBase;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import koolkrafter5.questrep.QuestingReputation;
@@ -30,7 +30,7 @@ import koolkrafter5.questrep.client.gui.tasks.PanelTaskDeaths;
 import koolkrafter5.questrep.deaths.DeathData;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskDeaths;
 
-public class TaskDeaths implements ITask {
+public class TaskDeaths extends TaskProgressableBase<int[]> {
 
     private final Set<UUID> completeUsers = new TreeSet<>();
     public int target = 1;
@@ -87,15 +87,15 @@ public class TaskDeaths implements ITask {
 
     @Override
     public NBTTagCompound writeProgressToNBT(NBTTagCompound nbt, @Nullable List<UUID> users) {
-        NBTTagList jArray = new NBTTagList();
+        NBTTagList userTag = new NBTTagList();
 
         if (users != null) {
             users.forEach(
-                (uuid) -> { if (completeUsers.contains(uuid)) jArray.appendTag(new NBTTagString(uuid.toString())); });
+                (uuid) -> { if (completeUsers.contains(uuid)) userTag.appendTag(new NBTTagString(uuid.toString())); });
         } else {
-            completeUsers.forEach((uuid) -> jArray.appendTag(new NBTTagString(uuid.toString())));
+            completeUsers.forEach((uuid) -> userTag.appendTag(new NBTTagString(uuid.toString())));
         }
-        nbt.setTag("completeUsers", jArray);
+        nbt.setTag("completeUsers", userTag);
         return nbt;
     }
 
@@ -116,12 +116,28 @@ public class TaskDeaths implements ITask {
     }
 
     @Override
+    public int[] getUsersProgress(UUID uuid) {
+        return new int[] { DeathData.get()
+            .getDeaths(uuid) };
+    }
+
+    @Override
     public void resetUser(@Nullable UUID uuid) {
         if (uuid == null) {
             completeUsers.clear();
         } else {
             completeUsers.remove(uuid);
         }
+    }
+
+    @Override
+    public int[] readUserProgressFromNBT(NBTTagCompound nbt) {
+        return new int[] { nbt.getInteger("data") };
+    }
+
+    @Override
+    public void writeUserProgressToNBT(NBTTagCompound nbt, int[] progress) {
+        nbt.setInteger("data", progress[0]);
     }
 
     @Override

@@ -6,51 +6,42 @@ import net.minecraft.util.StatCollector;
 import betterquesting.api.utils.BigItemStack;
 import betterquesting.api2.client.gui.misc.GuiRectangle;
 import betterquesting.api2.client.gui.misc.IGuiRect;
-import betterquesting.api2.client.gui.panels.CanvasEmpty;
-import betterquesting.api2.client.gui.panels.content.PanelItemSlot;
-import betterquesting.api2.client.gui.panels.content.PanelTextBox;
-import betterquesting.api2.client.gui.resources.colors.GuiColorStatic;
-import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import bq_standard.client.gui.tasks.PanelTaskItemBase;
 import koolkrafter5.questrep.tasks.TaskDeaths;
 
-public class PanelTaskDeaths extends CanvasEmpty {
+public class PanelTaskDeaths extends PanelTaskItemBase<TaskDeaths> {
 
-    private final TaskDeaths task;
+    public static final BigItemStack SKULL_STACK = new BigItemStack(Items.skull);
 
     public PanelTaskDeaths(IGuiRect rect, TaskDeaths task) {
-        super(rect);
-        this.task = task;
+        super(rect, task);
     }
 
-    public void initPanel() {
-        super.initPanel();
-        PanelTextBox text;
-        if (task.progress < task.target) {
-            text = new PanelTextBox(
-                new GuiRectangle(
-                    0,
-                    0,
-                    this.getTransform()
-                        .getWidth(),
-                    20,
-                    0),
-                StatCollector.translateToLocalFormatted("questrep.gui.deaths.incomplete", task.progress, task.target));
-            text.setColor(PresetColor.TEXT_MAIN.getColor());
-        } else {
-            text = new PanelTextBox(
-                new GuiRectangle(
-                    0,
-                    0,
-                    this.getTransform()
-                        .getWidth(),
-                    20,
-                    0),
-                StatCollector.translateToLocalFormatted("questrep.gui.deaths.complete", task.progress));
-            text.setColor(new GuiColorStatic(0, 176, 0, 255));
-        }
-        text.setFontSize(12);
-        PanelItemSlot skull = new PanelItemSlot(new GuiRectangle(0, 20, 24, 24, 0), -1, new BigItemStack(Items.skull));
-        this.addPanel(text);
-        this.addPanel(skull);
+    @Override
+    protected int getItemCount() {
+        return 1;
+    }
+
+    @Override
+    protected BigItemStack getItemStack(int i) {
+        return SKULL_STACK;
+    }
+
+    @Override
+    protected GuiRectangle createItemSlotRect(int i) {
+        return new GuiRectangle(0, i * 36, 36, 36, 0);
+    }
+
+    @Override
+    protected GuiRectangle createTextBoxRect(int i, int width) {
+        return new GuiRectangle(40, i * 36, width - 40, 36, 0);
+    }
+
+    @Override
+    protected void initPanelExtras(int listW) {}
+
+    @Override
+    protected void addItemName(StringBuilder sb, BigItemStack stack, int index) {
+        sb.append(StatCollector.translateToLocal("questrep.label.deaths"));
     }
 }
