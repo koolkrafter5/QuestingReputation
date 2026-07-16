@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 
@@ -32,17 +31,12 @@ public class GuiEditTaskDeaths extends GuiScreenCanvas {
 
     private final Map.Entry<UUID, IQuest> quest;
     private final TaskDeaths task;
-    private static final ResourceLocation QUEST_EDIT = new ResourceLocation("betterquesting:quest_edit");
 
     public GuiEditTaskDeaths(GuiScreen parent, Map.Entry<UUID, IQuest> quest, TaskDeaths task) {
         super(parent);
         this.quest = quest;
         this.task = task;
         this.setVolatile(true);
-    }
-
-    public GuiEditTaskDeaths getScreenRef() {
-        return this;
     }
 
     @Override
@@ -87,7 +81,7 @@ public class GuiEditTaskDeaths extends GuiScreenCanvas {
             new PanelTextField<>(
                 new GuiTransform(GuiAlign.TOP_LEFT, width, 32, width - 16, 16, 0),
                 Integer.toString(task.target),
-                FieldFilterNumber.INT).setCallback(value -> task.target = value));
+                FieldFilterNumber.INT).setCallback(value -> task.target = Math.max(value, 0)));
 
         // region Decorative Elements
         // Top Decorative Line
@@ -119,32 +113,6 @@ public class GuiEditTaskDeaths extends GuiScreenCanvas {
         cvBackground.addPanel(plBottom);
         // endregion
     }
-
-    // private void sendChanges() {
-    // NBTTagCompound base = new NBTTagCompound();
-    // base.setTag("config", quest.writeToNBT(new NBTTagCompound()));
-    // base.setTag("progress", quest.writeProgressToNBT(new NBTTagCompound(), null));
-    // NBTTagCompound tags = new NBTTagCompound();
-    // tags.setInteger("action", EnumPacketAction.EDIT.ordinal());
-    // tags.setInteger("questID", QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-    // tags.setTag("data", base);
-    // QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(QUEST_EDIT, tags));
-    // }
-    //
-    // private void sendChanges() {
-    // NBTTagCompound entry = new NBTTagCompound();
-    // NBTTagCompound payload = new NBTTagCompound();
-    //
-    // entry.setTag("progress", quest.writeProgressToNBT(new NBTTagCompound(), null));
-    //
-    // payload.setInteger("questID", QuestingAPI.getAPI(ApiReference.QUEST_DB).getID(quest));
-    // entry.setTag("config", quest.writeToNBT(new NBTTagCompound()));
-    //
-    // payload.setTag("data", entry);
-    // payload.setInteger("action", EnumPacketAction.EDIT.ordinal());
-    //
-    // QuestingAPI.getAPI(ApiReference.PACKET_SENDER).sendToServer(new QuestingPacket(QUEST_EDIT, payload));
-    // }
 
     private void sendChanges() {
         NetQuestEdit.requestEdit(Collections.singletonMap(quest.getKey(), quest.getValue()));
