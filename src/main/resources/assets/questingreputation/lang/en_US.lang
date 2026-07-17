@@ -39,6 +39,6 @@ questrep.button.reputation.lowest=Lowest Tier
 questrep.button.reputation.highest=Highest Tier
 
 # Reputation Reward
-questrep.reward.reputation=Reputation Reward
-questrep.gui.edit_reputation_reward=Edit Reputation Reward
+questrep.reward.reputation=Reputation Change
+questrep.gui.edit_reputation_reward=Edit Reputation Change
 questrep.gui.change=Reputation Change:

@@ -2,44 +2,62 @@ package koolkrafter5.questrep.client.gui.rewards;
 
 import net.minecraft.util.EnumChatFormatting;
 
-import org.lwjgl.util.vector.Vector4f;
-
-import betterquesting.api2.client.gui.misc.GuiPadding;
-import betterquesting.api2.client.gui.misc.GuiTransform;
+import betterquesting.api.utils.BigItemStack;
+import betterquesting.api2.client.gui.misc.GuiRectangle;
 import betterquesting.api2.client.gui.misc.IGuiRect;
-import betterquesting.api2.client.gui.panels.CanvasEmpty;
+import betterquesting.api2.client.gui.panels.CanvasMinimum;
+import betterquesting.api2.client.gui.panels.content.PanelItemSlot;
 import betterquesting.api2.client.gui.panels.content.PanelTextBox;
 import betterquesting.api2.client.gui.themes.presets.PresetColor;
+import bq_standard.client.gui.panels.content.PanelItemSlotBuilder;
 import koolkrafter5.questrep.reputation.FactionData;
 import koolkrafter5.questrep.rewards.RewardReputation;
 
-public class PanelRewardReputation extends CanvasEmpty {
+public class PanelRewardReputation extends CanvasMinimum {
 
-    RewardReputation reward;
+    private final RewardReputation reward;
+    private final IGuiRect initialRect;
 
     public PanelRewardReputation(IGuiRect rect, RewardReputation reward) {
         super(rect);
         this.reward = reward;
+        this.initialRect = rect;
     }
 
     public void initPanel() {
         super.initPanel();
-        this.addPanel(
-            (new PanelTextBox(
-                new GuiTransform(new Vector4f(0.0F, 0.5F, 1.0F, 0.5F), new GuiPadding(0, -16, 0, 0), 0),
-                FactionData.getDisplayName(this.reward.faction))).setAlignment(1)
-                    .setColor(PresetColor.TEXT_MAIN.getColor()));
-        String txt2 = EnumChatFormatting.BOLD.toString();
-        if (this.reward.amount >= 0) {
-            txt2 = txt2 + EnumChatFormatting.GREEN + "+ " + Math.abs(this.reward.amount);
-        } else {
-            txt2 = txt2 + EnumChatFormatting.RED + "- " + Math.abs(this.reward.amount);
-        }
+        int listWidth = initialRect.getWidth();
 
-        this.addPanel(
-            (new PanelTextBox(
-                new GuiTransform(new Vector4f(0.0F, 0.5F, 1.0F, 0.5F), new GuiPadding(0, 0, 0, -16), 0),
-                txt2)).setAlignment(1)
-                    .setColor(PresetColor.TEXT_MAIN.getColor()));
+        BigItemStack stack = FactionData.getRepresentativeStack(reward.faction);
+        GuiRectangle rectangle = new GuiRectangle(0, 0, 18, 18, 0);
+        PanelItemSlot is = PanelItemSlotBuilder.forValue(stack, rectangle)
+            .build();
+        addPanel(is);
+        addPanel(
+            new PanelTextBox(new GuiRectangle(22, 6, listWidth - 22, 14, 0), getText())
+                .setColor(PresetColor.TEXT_MAIN.getColor()));
+        recalcSizes();
+    }
+
+    private String getText() {
+        if (reward.amount > 0) {
+            return EnumChatFormatting.GREEN + "+"
+                + reward.amount
+                + EnumChatFormatting.RESET
+                + " "
+                + EnumChatFormatting.getTextWithoutFormattingCodes(FactionData.getDisplayName(reward.faction));
+        }
+        if (reward.amount == 0) {
+            return EnumChatFormatting.YELLOW + "+"
+                + reward.amount
+                + EnumChatFormatting.RESET
+                + " "
+                + EnumChatFormatting.getTextWithoutFormattingCodes(FactionData.getDisplayName(reward.faction));
+        }
+        return "" + EnumChatFormatting.RED
+            + reward.amount
+            + EnumChatFormatting.RESET
+            + " "
+            + EnumChatFormatting.getTextWithoutFormattingCodes(FactionData.getDisplayName(reward.faction));
     }
 }
