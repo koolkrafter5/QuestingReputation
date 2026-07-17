@@ -109,13 +109,12 @@ public class GuiEditTaskReputation extends GuiScreenCanvas implements IFactionSe
         txtLowerBound = new PanelTextField<>(
             new GuiTransform(GuiAlign.TOP_CENTER, -60, 74, 120, 16, 0),
             Integer.toString(task.lowerBound),
-            FieldFilterNumber.INT);
-        txtLowerBound.setCallback(val -> {
-            task.lowerBound = val;
-            lowerTextUpdate = true;
-            setLowerIndex();
-            rebuildText();
-        });
+            FieldFilterNumber.INT).setCallback(val -> {
+                task.lowerBound = val;
+                lowerTextUpdate = true;
+                setLowerIndex();
+                rebuildText();
+            });
         cvBackground.addPanel(txtLowerBound);
 
         lowerMin = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -100, 74, 20, 16, 0), 1, "x") {
@@ -224,14 +223,13 @@ public class GuiEditTaskReputation extends GuiScreenCanvas implements IFactionSe
         txtUpperBound = new PanelTextField<>(
             new GuiTransform(GuiAlign.TOP_CENTER, -60, 108, 120, 16, 0),
             Integer.toString(task.upperBound),
-            FieldFilterNumber.INT);
-        txtUpperBound.setCallback(val -> {
-            task.upperBound = val;
-            upperTextUpdate = true;
-            setUpperIndex();
-            updateUpperBound();
-            rebuildText();
-        });
+            FieldFilterNumber.INT).setCallback(val -> {
+                task.upperBound = val;
+                upperTextUpdate = true;
+                setUpperIndex();
+                updateUpperBound();
+                rebuildText();
+            });
         upperMin = new PanelButton(new GuiTransform(GuiAlign.TOP_CENTER, -100, 108, 20, 16, 0), 1, "<<") {
 
             // Set Upper Bound to the lowest tier
@@ -453,6 +451,7 @@ public class GuiEditTaskReputation extends GuiScreenCanvas implements IFactionSe
             lowerDec.setEnabled(false);
             lowerInc.setEnabled(true);
             lowerMax.setEnabled(true);
+            lowerTextUpdate = false;
         } else if (lowerTierIndex >= currentTiers.size() - 1) {
             lowerTierIndex = currentTiers.size() - 1;
             lowerMin.setEnabled(true);
@@ -487,6 +486,7 @@ public class GuiEditTaskReputation extends GuiScreenCanvas implements IFactionSe
             upperDec.setEnabled(true);
             upperInc.setEnabled(true);
             upperMax.setEnabled(true);
+            upperTextUpdate = false;
         }
         rebuildText();
     }
