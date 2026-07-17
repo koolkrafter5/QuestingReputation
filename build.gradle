@@ -2,9 +2,3 @@
 plugins {
     id 'com.gtnewhorizons.gtnhconvention'
 }
-
-repositories {
-    maven {
-        url = "https://cursemaven.com"
-    }
-}
