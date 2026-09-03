@@ -31,8 +31,7 @@ questrep.label.reputation.upper=Upper Bound: %s
 questrep.label.reputation.none=None
 questrep.label.reputation.invert=Invert Range: %s
 # Editing Buttons
-questrep.button.reputation.remove.lower=Remove Lower Bound
-questrep.button.reputation.remove.upper=Remove Upper Bound
+questrep.button.reputation.remove=Remove Bound
 questrep.button.reputation.next=Next Tier
 questrep.button.reputation.previous=Previous Tier
 questrep.button.reputation.lowest=Lowest Tier
