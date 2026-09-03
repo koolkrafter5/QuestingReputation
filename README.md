@@ -1,7 +1,7 @@
 # Questing Reputation
 
 An addon mod for Better Questing that reimplements reputation tasks and rewards (better than the half-baked scoreboard system in BQStandard) as well as the death tasks from HQM.
-See a video of the reputation tasks and rewards [here](https://youtu.be/BlM5f1umOGk)
+See a video of the reputation tasks and rewards [here](https://youtu.be/BlM5f1umOGk).
 
 ### Features
 
@@ -14,26 +14,29 @@ See a video of the reputation tasks and rewards [here](https://youtu.be/BlM5f1um
 
 Creating factions for reputation:
 The faction config is located in config/questingreputation/factions.json. Run the mod once to generate a default config if that file is not present.
-That config is a json file with the following format:
+That config is a JSON file with the following format:
+```json
 {
   "factionID": {
-    "name": A String with the display name of your faction (defaults to the factionID), Can be a translation key.
-    "deathChange": An int that sets how much reputation will be lost on death (default config in questrep.cfg),
-    "defaultReputation": An int that sets the reputation new players will start at for this faction (default config in questrep.cfg),
-    "tiers": \[
+    "name": "A String with the display name of your faction (defaults to the factionID). Can be a translation key.",
+    "item": "A String specifying an item to represent this faction when shown in quests, in the format \"modid:itemname(:meta optional)\"",
+    "deathChange": "An int that sets how much reputation will be lost on death (overrides the default config in questrep.cfg)",
+    "defaultReputation": "An int that sets the reputation new players will start at for this faction (overrides the default config in questrep.cfg)",
+    "tiers": [
     {
-      "name": A string with the tier name. Can be a translation key.
-      "value": The reputation value for this tier. Applies to a player if this tier is the one closest to 0 that the player's reputation is in.
+      "name": "A string with the tier name. Can be a translation key.",
+      "value": "The reputation value for this tier. Applies to a player if this tier is the one closest to 0 that the player's reputation is in."
     }, ...
     ]
   },
   "factionID2":  { ... }
 }
+```
 
 Creating Reputation Requirement Tasks:
 1. Create a new quest as normal.
 2. Select questrep:reputation in the Tasks selection for a Reputation Task.
-3. Configure the chosen task in the editor. Select a faction, set lower and/or upper bounds, and choose if the range should be inverted. A preview of the task will be available at the bottom of the editor.
+3. Configure the chosen task in the editor. Select a faction, set lower and/or upper bounds, and choose if the range should be inverted. A preview of the task's requirement will be available at the bottom of the editor.
 4. Set any other tasks.
 5. Set any rewards.
 6. The quest is ready!
@@ -46,7 +49,7 @@ Creating Death Tasks:
 5. Set any rewards.
 6. The quest is done!
 
-Creating Reputation Rewards:
+Creating Reputation Change Rewards:
 1. Create a new quest as normal.
 2. Set any number of tasks, such as item retrievals or reputation requirements.
 3. Choose questrep:reputation in the Rewards selection for a Reputation Reward.
@@ -55,12 +58,12 @@ Creating Reputation Rewards:
 6. The quest is done!
 
 ### Coming soon
-This mod currently only works in singleplayer. Fixes to let it run on a server are the first priority.
+This mod currently only works in singleplayer. Fixes to let it run on servers are the first priority.
 After that, there are still a few things that will be added:
 
  - A visual editor for the different factions, including tiers, display names, the death change amount, and the default reputation.
- - An importer for HQM Reputation Tasks and Rewards.
- - A way for parties to only claim reputation from a Reputation Reward once.
- - Some anti-cheese for players creating and leaving parties to game the reputation system.
+ - An importer which can convert HQM's reputation and death tasks and reputation rewards.
+ - A way for a party to only claim reputation from a Reputation Reward once.
+ - Anti-cheese for players creating, leaving, and rejoining parties to game the reputation system.
 
 Special thanks to [ExampleMod for 1.7.10!](https://github.com/GTNewHorizons/ExampleMod1.7.10)
