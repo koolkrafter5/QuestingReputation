@@ -12,14 +12,14 @@ import betterquesting.api.questing.rewards.IReward;
 import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.registry.IFactoryData;
 import betterquesting.api2.registry.IRegistry;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import koolkrafter5.questrep.handlers.QRHandlers;
-import koolkrafter5.questrep.network.DelayedSyncHandler;
+import koolkrafter5.questrep.handlers.QREventHandlers;
 import koolkrafter5.questrep.network.PacketHandler;
 import koolkrafter5.questrep.reputation.FactionData;
 import koolkrafter5.questrep.rewards.factory.FactoryRewardReputation;
@@ -33,7 +33,6 @@ import koolkrafter5.questrep.tasks.factory.FactoryTaskReputation;
     acceptedMinecraftVersions = "[1.7.10]")
 public class QuestingReputation {
 
-    public static Logger log = null;
     public static final String MODID = "questrep";
     public static final Logger LOG = LogManager.getLogger(MODID);
 
@@ -44,7 +43,6 @@ public class QuestingReputation {
     // preInit "Run before anything else. Read your config, create blocks, items, etc, and register them with the
     // GameRegistry." (Remove if not needed)
     public void preInit(FMLPreInitializationEvent event) {
-        log = event.getModLog();
         proxy.preInit(event);
         PacketHandler.init();
     }
@@ -64,8 +62,11 @@ public class QuestingReputation {
 
         FactionData.loadFactions();
 
-        MinecraftForge.EVENT_BUS.register(new QRHandlers());
-        MinecraftForge.EVENT_BUS.register(new DelayedSyncHandler());
+        QREventHandlers events = new QREventHandlers();
+        MinecraftForge.EVENT_BUS.register(events);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(events);
     }
 
     @Mod.EventHandler

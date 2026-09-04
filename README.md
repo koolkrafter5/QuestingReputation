@@ -10,7 +10,7 @@ See a video of the reputation tasks and rewards [here](https://youtu.be/BlM5f1um
  - Quest tasks that require a certain number of deaths (counted among the entire party if applicable).
  - Quest rewards that change the reputation for the player/party.
 
-### Getting started
+### Getting Started
 
 Creating factions for reputation:
 The faction config is located in config/questingreputation/factions.json. Run the mod once to generate a default config if that file is not present.
@@ -57,13 +57,14 @@ Creating Reputation Change Rewards:
 5. Set any other rewards.
 6. The quest is done!
 
-### Coming soon
-This mod currently only works in singleplayer. Fixes to let it run on servers are the first priority.
-After that, there are still a few things that will be added:
+### Coming Soon
+This mod should be fully functional in single and multiplayer (although it hasn't really been tested yet). The following features are planned for the future:
 
- - A visual editor for the different factions, including tiers, display names, the death change amount, and the default reputation.
- - An importer which can convert HQM's reputation and death tasks and reputation rewards.
- - A way for a party to only claim reputation from a Reputation Reward once.
+ - A visual editor for the different factions, including tiers, display names, the death change amount, and players' default reputation.
+ - Commands to modify players' reputation.
+ - A central location in BQ for players to see their standing with all factions and all factions' tiers.
+ - An HQM quest importer which can convert its reputation and death tasks and reputation rewards.
+ - A way for a party to only claim reputation from a Reputation Change reward once.
  - Anti-cheese for players creating, leaving, and rejoining parties to game the reputation system.
 
 Special thanks to [ExampleMod for 1.7.10!](https://github.com/GTNewHorizons/ExampleMod1.7.10)

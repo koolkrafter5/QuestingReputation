@@ -14,12 +14,10 @@ import betterquesting.api2.client.gui.misc.IGuiRect;
 import betterquesting.api2.client.gui.panels.IGuiPanel;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import koolkrafter5.questrep.QuestingReputation;
 import koolkrafter5.questrep.client.gui.editors.GuiEditReputationReward;
 import koolkrafter5.questrep.client.gui.rewards.PanelRewardReputation;
-import koolkrafter5.questrep.network.PacketClaimReputationReward;
-import koolkrafter5.questrep.network.PacketHandler;
 import koolkrafter5.questrep.reputation.FactionData;
-import koolkrafter5.questrep.reputation.ReputationData;
 import koolkrafter5.questrep.rewards.factory.FactoryRewardReputation;
 
 public class RewardReputation implements IReward {
@@ -42,13 +40,7 @@ public class RewardReputation implements IReward {
     }
 
     public void claimReward(EntityPlayer player, Map.Entry<UUID, IQuest> quest) {
-        if (player.worldObj.isRemote) {
-            // Client side — send packet to server
-            PacketHandler.INSTANCE.sendToServer(new PacketClaimReputationReward(player.getUniqueID(), faction, amount));
-        } else {
-            ReputationData.get()
-                .addReputation(player, faction, amount);
-        }
+        QuestingReputation.proxy.addReputation(player, faction, amount);
     }
 
     public void readFromNBT(NBTTagCompound json) {

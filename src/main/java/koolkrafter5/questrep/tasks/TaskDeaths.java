@@ -110,7 +110,7 @@ public class TaskDeaths extends TaskProgressableBase<int[]> {
             try {
                 completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
             } catch (Exception e) {
-                QuestingReputation.log.log(Level.ERROR, "Unable to load UUID for task", e);
+                QuestingReputation.LOG.log(Level.ERROR, "Unable to load UUID for task", e);
             }
         }
     }

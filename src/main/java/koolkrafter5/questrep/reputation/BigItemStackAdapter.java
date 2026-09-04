@@ -19,13 +19,13 @@ class BigItemStackAdapter extends TypeAdapter<BigItemStack> {
         String item = reader.nextString();
         String[] input = item.split(":");
         if (input.length < 2) {
-            QuestingReputation.log
+            QuestingReputation.LOG
                 .warn("Unable to read item stack \"{}\". Valid format is \"modid:name(:meta optional)\"", item);
             return null;
         }
         ItemStack itemStack = GameRegistry.findItemStack(input[0], input[1], 1);
         if (itemStack == null) {
-            QuestingReputation.log.warn("Unable to find item stack \"{}\".", item);
+            QuestingReputation.LOG.warn("Unable to find item stack \"{}\".", item);
             return null;
         }
         if (input.length < 3) {
@@ -34,7 +34,7 @@ class BigItemStackAdapter extends TypeAdapter<BigItemStack> {
         try {
             itemStack.setItemDamage(Integer.parseInt(input[2]));
         } catch (NumberFormatException e) {
-            QuestingReputation.log.warn("Invalid metadata value {} for item stack {}:{}", input[2], input[0], input[1]);
+            QuestingReputation.LOG.warn("Invalid metadata value {} for item stack {}:{}", input[2], input[0], input[1]);
         }
         return new BigItemStack(itemStack);
     }

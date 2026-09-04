@@ -48,7 +48,7 @@ public class FactionData {
             getFactions().clear();
             getFactions().putAll(gson.fromJson(br, type));
         } catch (Exception e) {
-            QuestingReputation.log.error("Failed to load faction reputation config: {}", e);
+            QuestingReputation.LOG.error("Failed to load faction reputation config.", e);
         }
     }
 
@@ -100,9 +100,9 @@ public class FactionData {
             Gson gson = new GsonBuilder().setPrettyPrinting()
                 .create();
             gson.toJson(root, writer);
-            QuestingReputation.log.info("Created default faction config at {}", configFile.getPath());
+            QuestingReputation.LOG.info("Created default faction config at {}", configFile.getPath());
         } catch (IOException e) {
-            QuestingReputation.log.error("Failed to write default config: {}", e);
+            QuestingReputation.LOG.error("Failed to write default config: {}", e);
         }
     }
 
@@ -229,7 +229,7 @@ public class FactionData {
      */
     public static String getDisplayName(String faction) {
         if (!getFactions().containsKey(faction)) {
-            QuestingReputation.log.warn("Tried to getDisplayName for nonexistent faction {}", faction);
+            QuestingReputation.LOG.warn("Tried to getDisplayName for nonexistent faction {}", faction);
             return Faction.UNKNOWN.name;
         }
         return StatCollector.translateToLocal(getFactions().get(faction).name);
@@ -247,7 +247,7 @@ public class FactionData {
      */
     public static int getDeathChange(String faction) {
         if (!getFactions().containsKey(faction)) {
-            QuestingReputation.log.warn("Tried to getDeathChange for nonexistent faction {}", faction);
+            QuestingReputation.LOG.warn("Tried to getDeathChange for nonexistent faction {}", faction);
             return Faction.UNKNOWN.deathChange;
         }
         return getFactions().get(faction).deathChange;
@@ -258,7 +258,7 @@ public class FactionData {
      */
     public static void setDeathChange(String faction, int value) {
         if (!getFactions().containsKey(faction)) {
-            QuestingReputation.log.warn("Tried to setDeathChange for nonexistent faction {}", faction);
+            QuestingReputation.LOG.warn("Tried to setDeathChange for nonexistent faction {}", faction);
             return;
         }
         getFactions().get(faction).deathChange = value;
@@ -266,7 +266,7 @@ public class FactionData {
 
     public static Integer getDefaultReputation(String faction) {
         if (!getFactions().containsKey(faction)) {
-            QuestingReputation.log.warn("Tried to getDefaultReputation for nonexistent faction {}", faction);
+            QuestingReputation.LOG.warn("Tried to getDefaultReputation for nonexistent faction {}", faction);
             return Faction.UNKNOWN.defaultReputation;
         }
         return getFactions().get(faction).defaultReputation;
@@ -274,7 +274,7 @@ public class FactionData {
 
     public static void setDefaultReputation(String faction, int value) {
         if (!getFactions().containsKey(faction)) {
-            QuestingReputation.log.warn("Tried to setDefaultReputation for nonexistent faction {}", faction);
+            QuestingReputation.LOG.warn("Tried to setDefaultReputation for nonexistent faction {}", faction);
             return;
         }
         getFactions().get(faction).defaultReputation = value;
@@ -293,7 +293,7 @@ public class FactionData {
      */
     public static BigItemStack getRepresentativeStack(String faction) {
         if (!getFactions().containsKey(faction)) {
-            QuestingReputation.log.warn("Tried to getRepresentativeStack for nonexistent faction {}", faction);
+            QuestingReputation.LOG.warn("Tried to getRepresentativeStack for nonexistent faction {}", faction);
             return Faction.UNKNOWN.item;
         }
         return getFactions().get(faction).item;
@@ -304,10 +304,10 @@ public class FactionData {
      */
     public static void setRepresentativeStack(String faction, BigItemStack value) {
         if (!getFactions().containsKey(faction)) {
-            QuestingReputation.log.warn("Tried to setRepresentativeStack for nonexistent faction {}", faction);
+            QuestingReputation.LOG.warn("Tried to setRepresentativeStack for nonexistent faction {}", faction);
             return;
         } else if (value == null) {
-            QuestingReputation.log.warn("Tried to setRepresentativeStack with null itemstack for faction {}", faction);
+            QuestingReputation.LOG.warn("Tried to setRepresentativeStack with null itemstack for faction {}", faction);
             return;
         }
         getFactions().get(faction).item = value;

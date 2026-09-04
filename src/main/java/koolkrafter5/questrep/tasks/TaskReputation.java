@@ -29,7 +29,6 @@ import koolkrafter5.questrep.QuestingReputation;
 import koolkrafter5.questrep.client.gui.editors.tasks.GuiEditTaskReputation;
 import koolkrafter5.questrep.client.gui.tasks.PanelTaskReputation;
 import koolkrafter5.questrep.reputation.FactionData;
-import koolkrafter5.questrep.reputation.ReputationData;
 import koolkrafter5.questrep.reputation.ReputationTier;
 import koolkrafter5.questrep.tasks.factory.FactoryTaskReputation;
 
@@ -56,8 +55,7 @@ public class TaskReputation extends TaskProgressableBase<int[]> {
         UUID playerID = QuestingAPI.getQuestingUUID(participant.PLAYER);
         if (isComplete(playerID)) return;
 
-        int reputation = ReputationData.get()
-            .getReputation(participant.PLAYER, faction);
+        int reputation = QuestingReputation.proxy.getReputation(participant.PLAYER, faction);
         if (checkReputation(reputation)) {
             setComplete(participant.ALL_UUIDS);
             participant.markDirtyParty(quest.getKey());
@@ -85,8 +83,7 @@ public class TaskReputation extends TaskProgressableBase<int[]> {
 
     @Override
     public int[] getUsersProgress(UUID uuid) {
-        return new int[] { ReputationData.get()
-            .getReputation(uuid, faction) };
+        return new int[] { QuestingReputation.proxy.getReputation(uuid, faction) };
     }
 
     @Override
@@ -195,7 +192,7 @@ public class TaskReputation extends TaskProgressableBase<int[]> {
             try {
                 completeUsers.add(UUID.fromString(cList.getStringTagAt(i)));
             } catch (Exception e) {
-                QuestingReputation.log.log(Level.ERROR, "Unable to load UUID for task", e);
+                QuestingReputation.LOG.log(Level.ERROR, "Unable to load UUID for task", e);
             }
         }
     }

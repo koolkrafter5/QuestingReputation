@@ -23,14 +23,15 @@ import betterquesting.api2.utils.ParticipantInfo;
 import betterquesting.questing.party.PartyManager;
 import koolkrafter5.questrep.network.PacketHandler;
 import koolkrafter5.questrep.network.PacketReputationSync;
+import koolkrafter5.questrep.network.PacketReputationUpdate;
 import koolkrafter5.questrep.tasks.TaskReputation;
 
 public class ReputationData extends WorldSavedData {
 
     private static final String DATA_NAME = "QuestingReputation";
 
-    private final Map<UUID, Map<String, Integer>> playerReputation = new HashMap<>();
-    private final Map<Integer, Map<String, Integer>> partyReputation = new HashMap<>();
+    public final Map<UUID, Map<String, Integer>> playerReputation = new HashMap<>();
+    public final Map<Integer, Map<String, Integer>> partyReputation = new HashMap<>();
 
     @SuppressWarnings("unused") // Needed for saving/loading to work properly due to WorldSavedData reflection
     public ReputationData() {
@@ -131,26 +132,56 @@ public class ReputationData extends WorldSavedData {
         if (amount == 0) {
             return;
         }
-        Map<String, Integer> map = getAllReputations(player);
-        map.put(faction, getReputation(player, faction) + amount);
+        Map<String, Integer> map = getProperReputationMap(player);
+        map.put(faction, map.getOrDefault(faction, 0) + amount);
         updateReputationTasks(player);
         markDirty();
-        syncTo(player);
+        syncFactionToParty(player, faction);
     }
 
-    public void syncTo(EntityPlayer player) {
-        if (player == null) return;
-
-        NBTTagCompound tag = new NBTTagCompound();
-        Map<String, Integer> rep = getProperReputationMap(player);
-        NBTTagCompound playerNBT = new NBTTagCompound();
-
-        for (Map.Entry<String, Integer> e : rep.entrySet()) {
-            playerNBT.setInteger(e.getKey(), e.getValue());
+    public void syncAllFactions(EntityPlayer player) {
+        if (!(player instanceof EntityPlayerMP playerMP)) {
+            return;
         }
 
-        tag.setTag("PlayerReputation", playerNBT);
-        PacketHandler.INSTANCE.sendTo(new PacketReputationSync(tag), (EntityPlayerMP) player);
+        Map<String, Integer> rep = getProperReputationMap(player);
+
+        NBTTagCompound tag = new NBTTagCompound();
+
+        for (Map.Entry<String, Integer> entry : rep.entrySet()) {
+            tag.setInteger(entry.getKey(), entry.getValue());
+        }
+
+        PacketHandler.INSTANCE.sendTo(new PacketReputationSync(tag), playerMP);
+    }
+
+    private void syncFactionToParty(EntityPlayer player, String faction) {
+        DBEntry<IParty> party = PartyManager.INSTANCE.getParty(player.getUniqueID());
+
+        if (party == null) {
+            syncFaction(player, faction);
+            return;
+        }
+
+        for (UUID member : party.getValue()
+            .getMembers()) {
+            EntityPlayer memberPlayer = MinecraftServer.getServer()
+                .getConfigurationManager()
+                .func_152612_a(member.toString());
+
+            if (memberPlayer != null) {
+                syncFaction(memberPlayer, faction);
+            }
+        }
+    }
+
+    public void syncFaction(EntityPlayer player, String faction) {
+        if (!(player instanceof EntityPlayerMP)) {
+            return;
+        }
+
+        PacketHandler
+            .sendToPlayer(new PacketReputationUpdate(faction, getReputation(player, faction)), (EntityPlayerMP) player);
     }
 
     /**
@@ -161,9 +192,10 @@ public class ReputationData extends WorldSavedData {
      * @param amount  The amount to set the player's reputation to.
      */
     public synchronized void setReputation(EntityPlayer player, String faction, int amount) {
-        Map<String, Integer> map = getAllReputations(player);
+        Map<String, Integer> map = getProperReputationMap(player);
         map.put(faction, amount);
         updateReputationTasks(player);
+        syncFactionToParty(player, faction);
         markDirty();
     }
 
@@ -179,15 +211,6 @@ public class ReputationData extends WorldSavedData {
                         .detect(pInfo, entry);
                 }
             }
-        }
-    }
-
-    /**
-     * Handles reputation changes from death for the given player.
-     */
-    public synchronized void deathChange(EntityPlayer player) {
-        for (String faction : FactionData.getAllFactions()) {
-            addReputation(player, faction, FactionData.getDeathChange(faction));
         }
     }
 

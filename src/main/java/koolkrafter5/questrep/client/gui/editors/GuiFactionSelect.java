@@ -129,7 +129,7 @@ public class GuiFactionSelect extends GuiScreenCanvas {
                         parent.setFaction(faction);
                         parent.rebuildText();
                     } catch (Exception e) {
-                        QuestingReputation.log.error("Unable to return faction selection!", e);
+                        QuestingReputation.LOG.error("Unable to return faction selection!", e);
                     }
                     mc.displayGuiScreen((GuiScreen) parent);
                 } else if (btn.getButtonID() == 1 && btn instanceof PanelButtonStorage pbs) {

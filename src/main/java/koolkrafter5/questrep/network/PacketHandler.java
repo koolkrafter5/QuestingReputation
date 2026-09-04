@@ -14,7 +14,7 @@ public class PacketHandler {
 
     public static void init() {
         register(PacketReputationSync.class, PacketReputationSync.Handler.class, Side.CLIENT);
-        register(PacketClaimReputationReward.class, PacketClaimReputationReward.Handler.class, Side.CLIENT);
+        register(PacketReputationUpdate.class, PacketReputationUpdate.Handler.class, Side.CLIENT);
     }
 
     private static <REQ extends IMessage, REPLY extends IMessage> void register(Class<REQ> messageClass,

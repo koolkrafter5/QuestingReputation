@@ -6,7 +6,6 @@ import java.util.UUID;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.stats.StatList;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
@@ -15,36 +14,36 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.ParticipantInfo;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent;
+import koolkrafter5.questrep.QuestingReputation;
 import koolkrafter5.questrep.deaths.DeathData;
-import koolkrafter5.questrep.network.DelayedSyncHandler;
 import koolkrafter5.questrep.reputation.ReputationData;
 import koolkrafter5.questrep.tasks.TaskDeaths;
 
-public class QRHandlers {
+@SuppressWarnings("unused")
+public class QREventHandlers {
 
     /**
-     * Initialize death number for players who join for the first time after the mod is added.
+     * Update death number on server if missing and sync reputations to player.
      */
     @SubscribeEvent
-    public void onPlayerJoin(EntityJoinWorldEvent event) {
-        if (!(event.entity instanceof EntityPlayer player)) return;
+    public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!(event.player instanceof EntityPlayerMP player) || player.worldObj.isRemote) return;
 
-        if (player.worldObj.isRemote) return;
-
-        EntityPlayerMP playerMP = (EntityPlayerMP) player;
         ReputationData.get()
             .updateReputationTasks(player);
         UUID id = player.getUniqueID();
 
-        if (DeathData.get()
+        if (!DeathData.get()
             .containsPlayer(id)) {
-            return;
+            int deathCount = player.func_147099_x()
+                .writeStat(StatList.deathsStat); // Yes, writeStat is what reads the stat.
+            DeathData.get()
+                .setDeaths(id, deathCount);
         }
-        int deathCount = playerMP.func_147099_x()
-            .writeStat(StatList.deathsStat); // Yes, writeStat is a reader.
-        DeathData.get()
-            .setDeaths(id, deathCount);
-        DelayedSyncHandler.queueSync(player.getUniqueID());
+
+        ReputationData.get()
+            .syncAllFactions(player);
     }
 
     /**
@@ -61,8 +60,7 @@ public class QRHandlers {
         UUID uuid = player.getUniqueID();
         DeathData.get()
             .addDeath(uuid);
-        ReputationData.get()
-            .deathChange(player);
+        QuestingReputation.proxy.deathChange(player);
         updateDeathTasks(player);
     }
 
