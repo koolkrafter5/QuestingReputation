@@ -31,7 +31,11 @@ public class FactionData {
 
     private static final Map<String, Faction> factions = new LinkedHashMap<>();
 
-    private static final String configPath = "config/questingreputation/factions.json";
+    private static final String configPath = "config/betterquesting/factions.json";
+    private static final Gson gson = new GsonBuilder()
+        .registerTypeAdapter(BigItemStack.class, new BigItemStackAdapter())
+        .setPrettyPrinting()
+        .create();
 
     public static void loadFactions() {
         File configFile = new File(configPath);
@@ -39,9 +43,6 @@ public class FactionData {
         if (!configFile.exists()) {
             createDefaultConfig(configFile);
         }
-
-        Gson gson = new GsonBuilder().registerTypeAdapter(BigItemStack.class, new BigItemStackAdapter())
-            .create();
 
         try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
             Type type = new TypeToken<Map<String, Faction>>() {}.getType();
@@ -102,7 +103,7 @@ public class FactionData {
             gson.toJson(root, writer);
             QuestingReputation.LOG.info("Created default faction config at {}", configFile.getPath());
         } catch (IOException e) {
-            QuestingReputation.LOG.error("Failed to write default config: {}", e);
+            QuestingReputation.LOG.error("Failed to write default config: ", e);
         }
     }
 
@@ -311,5 +312,22 @@ public class FactionData {
             return;
         }
         getFactions().get(faction).item = value;
+    }
+
+    /**
+     * Deletes all faction data.
+     */
+    public static void clearAllFactions() {
+        factions.clear();
+    }
+
+    public static void writeToConfig() {
+        File configFile = new File(configPath);
+        try (Writer writer = new FileWriter(configFile)) {
+            Type type = new TypeToken<Map<String, Faction>>() {}.getType();
+            gson.toJson(getFactions(), type, writer);
+        } catch (Exception e) {
+            QuestingReputation.LOG.error("Failed to save faction reputation config.", e);
+        }
     }
 }

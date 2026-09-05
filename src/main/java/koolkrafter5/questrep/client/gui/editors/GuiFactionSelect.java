@@ -94,7 +94,7 @@ public class GuiFactionSelect extends GuiScreenCanvas {
 
         PanelTextBox soon = new PanelTextBox(
             new GuiTransform(GuiAlign.MID_CENTER, -100, 0, 200, 12, 0),
-            "Visual editor coming soon! Edit factions in config/questingreputation/factions.json for now.",
+            "Visual editor coming soon! Edit factions in config/betterquesting/factions.json for now.",
             true).setAlignment(1)
                 .setColor(PresetColor.TEXT_MAIN.getColor());
         factionInfo.addPanel(soon);

@@ -6,6 +6,9 @@ import net.minecraftforge.common.MinecraftForge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.gtnewhorizon.gtnhlib.config.ConfigException;
+import com.gtnewhorizon.gtnhlib.config.ConfigurationManager;
+
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.questing.rewards.IReward;
@@ -30,7 +33,9 @@ import koolkrafter5.questrep.tasks.factory.FactoryTaskReputation;
     modid = QuestingReputation.MODID,
     version = Tags.VERSION,
     name = "Questing Reputation",
-    acceptedMinecraftVersions = "[1.7.10]")
+    acceptedMinecraftVersions = "[1.7.10]",
+    dependencies = "required-after:betterquesting;required-after:bq_standard")
+
 public class QuestingReputation {
 
     public static final String MODID = "questrep";
@@ -45,6 +50,12 @@ public class QuestingReputation {
     public void preInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
         PacketHandler.init();
+
+        try {
+            ConfigurationManager.registerConfig(QRConfig.class);
+        } catch (ConfigException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Mod.EventHandler

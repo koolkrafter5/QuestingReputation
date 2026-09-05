@@ -41,3 +41,7 @@ questrep.button.reputation.highest=Highest Tier
 questrep.reward.reputation=Reputation Change
 questrep.gui.edit_reputation_reward=Edit Reputation Change
 questrep.gui.change=Reputation Change:
+
+# Importer
+questrep.importer.hqm_quest.name=HQM Reputation Quest Importer
+questrep.importer.hqm_quest.desc=Imports HQM quest lines as accurately as possible. Export HQM's data using "/hqm save all" first. Due to the strange nature in which HQM quests are indexed post export, errors may occur if quests have duplicate names or conditional unlocks. Has extra support for reputation and death quests. Be sure to include "reputations.json" in the selected files or reputation tasks/rewards will not be converted. Automatically updates the factions config when importing is complete.

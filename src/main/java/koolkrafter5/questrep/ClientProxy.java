@@ -5,9 +5,19 @@ import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayer;
 
+import betterquesting.api.api.ApiReference;
+import betterquesting.api.api.QuestingAPI;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import koolkrafter5.questrep.importers.hqm.QuestRepHQMQuestImporter;
 import koolkrafter5.questrep.reputation.ClientReputationCache;
 
 public class ClientProxy extends CommonProxy {
+
+    @Override
+    public void postInit(FMLPostInitializationEvent event) {
+        QuestingAPI.getAPI(ApiReference.IMPORT_REG)
+            .registerImporter(QuestRepHQMQuestImporter.INSTANCE);
+    }
 
     /**
      * Get the player's (party's) reputation level for every faction. No defaults are generated if the player (or

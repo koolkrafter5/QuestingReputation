@@ -41,6 +41,26 @@ class BigItemStackAdapter extends TypeAdapter<BigItemStack> {
 
     @Override
     public void write(JsonWriter writer, BigItemStack item) throws IOException {
-        // Not implemented because it is not needed.
+        ItemStack stack = item.getBaseStack();
+
+        if (stack.getItem() == null) {
+            writer.nullValue();
+            return;
+        }
+
+        GameRegistry.UniqueIdentifier id = GameRegistry.findUniqueIdentifierFor(stack.getItem());
+
+        if (id == null) {
+            writer.nullValue();
+            return;
+        }
+
+        String value = id.modId + ":" + id.name;
+
+        if (stack.getItemDamage() != 0) {
+            value += ":" + stack.getItemDamage();
+        }
+
+        writer.value(value);
     }
 }
