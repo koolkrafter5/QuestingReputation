@@ -35,7 +35,6 @@ import koolkrafter5.questrep.tasks.factory.FactoryTaskReputation;
     name = "Questing Reputation",
     acceptedMinecraftVersions = "[1.7.10]",
     dependencies = "required-after:betterquesting;required-after:bq_standard")
-
 public class QuestingReputation {
 
     public static final String MODID = "questrep";

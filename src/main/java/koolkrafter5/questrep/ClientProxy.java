@@ -1,5 +1,6 @@
 package koolkrafter5.questrep;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -7,6 +8,9 @@ import net.minecraft.entity.player.EntityPlayer;
 
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
+import betterquesting.api.client.importers.IImportRegistry;
+import betterquesting.api.client.importers.IImporter;
+import bq_standard.importers.hqm.HQMQuestImporter;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import koolkrafter5.questrep.importers.hqm.QuestRepHQMQuestImporter;
 import koolkrafter5.questrep.reputation.ClientReputationCache;
@@ -15,8 +19,15 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void postInit(FMLPostInitializationEvent event) {
-        QuestingAPI.getAPI(ApiReference.IMPORT_REG)
-            .registerImporter(QuestRepHQMQuestImporter.INSTANCE);
+        IImportRegistry api = QuestingAPI.getAPI(ApiReference.IMPORT_REG);
+        List<IImporter> importers = api.getImporters();
+        for (int i = 0; i < importers.size(); i++) {
+            if (importers.get(i) instanceof HQMQuestImporter) {
+                importers.remove(i);
+                break;
+            }
+        }
+        api.registerImporter(QuestRepHQMQuestImporter.INSTANCE);
     }
 
     /**

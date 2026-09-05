@@ -3,19 +3,12 @@
 	"modList": [{
 		"modid": "${modId}",
 		"name": "${modName}",
-		"description": "Add HQM-style reputation to Better Quests!",
+		"description": "Add HQM-style reputation to BetterQuesting.",
 		"version": "${modVersion}",
 		"mcversion": "${minecraftVersion}",
 		"url": "https://github.com/koolkrafter5/QuestingReputation",
-		"updateUrl": "",
 		"authorList": ["koolkrafter5"],
 		"credits": "Special thanks to Joe!",
-		"logoFile": "",
-		"screenshots": [],
-		"parent": "",
-		"requiredMods": ["betterquesting"],
-		"dependencies": ["betterquesting"],
-		"dependants": [],
-		"useDependencyInformation": true
+		"logoFile": ""
 	}]
 }
